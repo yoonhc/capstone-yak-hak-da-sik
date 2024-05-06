@@ -1,0 +1,9 @@
+### EXTRACT MEDICATIONS
+POST http://localhost:3000/meds
+Content-Type: application/json
+
+{"text": "방 의약품의 명칭\n1회 투약\n2080) 페티노정\n1\n160) 유한다이크로짇정\n0.5\n150) 다이트정\n1\n560) 아카펜에스정\n1\n400)신일엠정\n1"}
+
+
+### EXTRACT MEDICATIONS
+GET http://localhost:3000/meds
