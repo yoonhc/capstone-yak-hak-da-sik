@@ -12,7 +12,7 @@ export class MedsController {
     @ApiOperation({ summary: 'Extract Medications from OCR Result' })
     @ApiResponse({
         status: 201,
-        description: 'It will return extracted mdications in the response',
+        description: 'It will return extracted medications in the response',
     })
     async extractMeds(
         @Body()

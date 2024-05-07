@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { MedListDTO } from './dto/med-list-dto';
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { OCRResultDTO } from './dto/ocr-result-dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MedsService {
+    constructor(private readonly configService: ConfigService) {}
 
     /*
     * JSON 형식인 ocrResult로부터 text를 추출한다 (text: "단어\n단어\n단어")
@@ -34,9 +36,9 @@ export class MedsService {
 
     // 전처리된 ocr결과를 GPT에 요청해 약물 리스트를 "약물1, 약물2, 약물3"
     async getGPTResponse(preprocessed: string): Promise<string> {
-        const endpoint: string = 'https://caucapstone.openai.azure.com/';
-        const azureKeyCredential: string = '3cabeb195a2e47dca214a7bdb64312a4';
-        const deploymentId: string = 'MediProject';
+        const endpoint: string = this.configService.get<string>('endpoint');
+        const azureKeyCredential: string = this.configService.get<string>('azureKey');
+        const deploymentId: string = this.configService.get<string>('deploymentID');
         const client: OpenAIClient = new OpenAIClient(endpoint, new AzureKeyCredential(azureKeyCredential));
 
         const prompt = [
@@ -59,7 +61,6 @@ export class MedsService {
 
         if (response.choices.length > 0 && response.choices[0].message) {
             const gptResult: string = response.choices[0].message.content;
-            console.log(gptResult);
             return gptResult;
         } else {
             console.log("No message content found in the response.");
