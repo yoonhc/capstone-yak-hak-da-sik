@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MedListDTO } from './dto/med-list-dto';
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
+import { OCRResultDTO } from './dto/ocr-result-dto';
 
 @Injectable()
 export class MedsService {
@@ -9,7 +10,7 @@ export class MedsService {
     * JSON 형식인 ocrResult로부터 text를 추출한다 (text: "단어\n단어\n단어")
     * 그 다음 text로부터 쓸데없는 단어를 제외하는 전처리를 거친다.
     */
-    preprocessOCR(ocrResult: any): string {
+    preprocessOCR(ocrResult: OCRResultDTO): string {
         const extractedText: string = ocrResult.text;
 
         // 아직 전처리는 미구현
@@ -26,7 +27,7 @@ export class MedsService {
     }
 
     // responsebody에 있는 ocrResult를 가지고 약물 리스트인 MedListDTO 반환
-    async extractMeds(ocrResult: any): Promise<MedListDTO> {
+    async extractMeds(ocrResult: OCRResultDTO): Promise<MedListDTO> {
         const preprocessed: string = this.preprocessOCR(ocrResult);
         return this.refineGPTResult(await this.getGPTResponse(preprocessed));
     }
@@ -41,7 +42,7 @@ export class MedsService {
         const prompt = [
             {
                 role: "system",
-                content: 'You are a helpful assistant that extract only medication written in Korean.'
+                content: 'You are a helpful assistant that extract only medication from list of words seperated by \\n.'
                     + 'Please extract only medications in given text and provide the result.\n'
                     + 'This is an example format: "medication1, medication2, medication3"'
             },
