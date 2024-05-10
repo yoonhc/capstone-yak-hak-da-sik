@@ -6,6 +6,13 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: ['Authorization'],
+    maxAge: 3600,
+  });
+
   app.useGlobalPipes(new ValidationPipe());
 
   // Swagger Setup
