@@ -3,10 +3,17 @@ import { MedListDTO } from './dto/med-list-dto';
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { OCRResultDTO } from './dto/ocr-result-dto';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Med } from './med.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MedsService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(
+        @InjectRepository(Med)
+        private medRepository: Repository<Med>,
+        private readonly configService: ConfigService
+    ) {}
 
     /*
     * JSON 형식인 ocrResult로부터 text를 추출한다 (text: "단어\n단어\n단어")
@@ -21,6 +28,7 @@ export class MedsService {
 
     // GPT 결과("약물1, 약물2, 약물3")를 가지고 MedListDTO를 만든다. 
     // 차후에 각각 약물이 맞는지(e.g. db에 있는지) verify하는 기능을 넣어야 할 듯
+    // 마지막 결과 리스트는 med-reference db에 이름이 있어야 하는게 좋을듯
     refineGPTResult(gptResult: string): MedListDTO {
         const medicationsArray = gptResult.split(", ");
         const medListDTO: MedListDTO = new MedListDTO();
@@ -66,5 +74,13 @@ export class MedsService {
             console.log("No message content found in the response.");
         }
     }
+
+    //create(): Promise<Med> {}
+
+    //update(): Promise<Med> {}
+
+    //find(): Promise<Med[]> {}
+
+    //findOne(id: number): Promise<Med> {}
 
 }
