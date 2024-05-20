@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { dataSourceOptions } from 'db/data-source';
 import { PillsModule } from './pills/pills.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { PillsModule } from './pills/pills.module';
       load: [configuration],
     }),
     MedsModule,
-    PillsModule
+    PillsModule,
+    SeedModule
   ],
   controllers: [AppController],
   providers: [AppService],
