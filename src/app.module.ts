@@ -7,26 +7,19 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { Med } from './meds/med.entity';
+import { dataSourceOptions } from 'db/data-source';
+import { PillsModule } from './pills/pills.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'root',
-      database: 'yakhakdasik',
-      entities: [Med],
-      synchronize: true,
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     ConfigModule.forRoot({
       envFilePath: ['.env.developtment', '.env.production'],
       isGlobal: true,
       load: [configuration],
     }),
-    MedsModule
+    MedsModule,
+    PillsModule
   ],
   controllers: [AppController],
   providers: [AppService],
