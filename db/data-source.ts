@@ -28,11 +28,11 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
 // npm run migration:run ------ run a migration file
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT),
-    username: process.env.USERNAME,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT),
+    username: process.env.PGUSER,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
     entities: ["dist/**/*.entity.js"],
     synchronize: false,
     migrations: ["dist/db/migrations/*.js"],

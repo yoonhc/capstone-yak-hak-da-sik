@@ -6,9 +6,9 @@ export default () => ({
     azureKey: process.env.AZUREKEY,
     deploymentID: process.env.DEPLOYMENT_ID,
     // DB
-    dbHost: process.env.DB_HOST,
-    dbPort: parseInt(process.env.DB_PORT),
-    username: process.env.USERNAME,
-    password: process.env.PASSWORD,
-    dbName: process.env.DB_NAME,
+    dbHost: process.env.PGHOST,
+    dbPort: parseInt(process.env.PGPORT),
+    username: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    dbName: process.env.PGDATABASE,
 });
