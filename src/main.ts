@@ -15,8 +15,8 @@ async function bootstrap() {
 
   // Seed Service(처음 db에 원하는 낱알 식별정보db와 같은 원하는 데이터 넣어주는 서비스)
   // 나중에 command로 작동하게 설정하면 좋을듯
-  const seedService = app.get(SeedService);
-  await seedService.seed();
+  //const seedService = app.get(SeedService);
+  //await seedService.seed();
 
   // Swagger Setup
   const config = new DocumentBuilder()

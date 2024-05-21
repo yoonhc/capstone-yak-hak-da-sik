@@ -7,15 +7,15 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { dataSourceOptions } from 'db/data-source';
+import { typeOrmAsyncConfig } from 'db/data-source';
 import { PillsModule } from './pills/pills.module';
 import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
+    TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
     ConfigModule.forRoot({
-      envFilePath: ['.env.developtment', '.env.production'],
+      envFilePath: ['.env'],
       isGlobal: true,
       load: [configuration],
     }),
