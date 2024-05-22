@@ -3,22 +3,24 @@ import { MedsService } from './meds.service';
 import { MedListDTO } from './dto/med-list-dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { OCRResultDTO } from './dto/ocr-result-dto';
+import { Med } from './med.entity';
 
 @Controller('meds')
 @ApiTags('meds')
 export class MedsController {
     constructor(private medsService: MedsService) { }
     @Post()
-    @ApiOperation({ summary: 'Extract Medications from OCR Result' })
+    @ApiOperation({ summary: 'Return Brief Medicine Info from OCR Result' })
     @ApiResponse({
         status: 201,
-        description: 'It will return extracted medications in the response',
+        description: 'It will return brief informations about extracted medications from OCR in the response',
     })
     async extractMeds(
         @Body()
         ocrResult: OCRResultDTO
-    ): Promise<MedListDTO> {
-        return await this.medsService.extractMeds(ocrResult);
+    ): Promise<Med[]> {
+        return await this.medsService.handleOCR(ocrResult);
+        // return await this.medsService.extractMeds(ocrResult);
     }
 
     /*

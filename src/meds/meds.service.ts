@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MedListDTO } from './dto/med-list-dto';
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { OCRResultDTO } from './dto/ocr-result-dto';
@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Med } from './med.entity';
 import { Repository } from 'typeorm';
+import { targetModulesByContainer } from '@nestjs/core/router/router-module';
 
 @Injectable()
 export class MedsService {
@@ -25,6 +26,50 @@ export class MedsService {
         // 아직 전처리는 미구현
         return extractedText;
     }
+
+    async handleOCR(ocrResult: OCRResultDTO): Promise<Med[]> {
+        const medList = await this.extractMeds(ocrResult);
+        return this.getMedInfoList(medList);
+    }
+
+    // MedListDTO를 인수로 받아서 Med(e약은요 정보) 배열들을 반환
+    async getMedInfoList(medListDTO: MedListDTO): Promise<Med[]> {
+
+        // MedListDTO의 medications 자체가 비어있을 경우, 빈 배열 반환
+        if (!medListDTO.medications || medListDTO.medications.length === 0) {
+            return [];
+        }
+
+        // 비동기 함수 별도 실행으로 리소스 최대한 활용
+        // Medications string 배열의 값들을 가지고 getMedInfoByName() 실행
+        const medInfoPromises = medListDTO.medications.map(async (medName) => {
+            try {
+                return await this.getMedInfoByName(medName);
+            } catch (error) {
+                // 만약 없다면, null값 채워넣고 로그 출력
+                console.error(`Error fetching medicine: ${medName}`, error.message);
+                return null;
+            }
+        });
+
+        const medInfos = await Promise.all(medInfoPromises);
+        // null값은 빼고 반환
+        return medInfos.filter(med => med !== null);
+    }
+
+    // 약 이름을 인수로 받아서 단일 Med(e약은요) 객체를 반환
+    async getMedInfoByName(name: string): Promise<Med> {
+        const found = await this.medRepository.findOne({
+            where: {
+                medName: name,
+            }
+        })
+        // 해당하는 약이 없을 시, Exception 발생
+        if(!found) {
+            throw new NotFoundException(`Can't find Board with name ${name}`)
+        }
+        return found;
+    } 
 
     // GPT 결과("약물1, 약물2, 약물3")를 가지고 MedListDTO를 만든다. 
     // 차후에 각각 약물이 맞는지(e.g. db에 있는지) verify하는 기능을 넣어야 할 듯
