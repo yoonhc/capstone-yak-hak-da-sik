@@ -20,24 +20,24 @@ export class Med {
     @Column({ type: "varchar" })
     medName: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     effect: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     howToUse: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     criticalInfo: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     warning: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     interaction: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     sideEffect: string;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     howToStore: string;
 }
