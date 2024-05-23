@@ -16,13 +16,9 @@ import { SeedModule } from './seed/seed.module';
     //TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '', //DELETED
-      database: 'yakhakdasik',
-      autoLoadEntities: true,
-      synchronize: true,
+      entities: ["dist/**/*.entity.js"],
+      synchronize: false,
+      migrations: ["dist/db/migrations/*.js"],
     }),
     ConfigModule.forRoot({
       envFilePath: ['.env'],
