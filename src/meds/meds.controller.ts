@@ -10,19 +10,32 @@ import { Med } from './med.entity';
 export class MedsController {
     constructor(private medsService: MedsService) { }
     @Post()
-    @ApiOperation({ summary: 'Return Brief Medicine Info from OCR Result' })
+    @ApiOperation({ summary: 'Extract Medicatrions from OCR Result' })
     @ApiResponse({
         status: 201,
-        description: 'It will return brief informations about extracted medications from OCR in the response',
+        description: 'It will return extracted medications in the response',
     })
     async extractMeds(
         @Body()
         ocrResult: OCRResultDTO
-    ): Promise<Med[]> {
-        return await this.medsService.handleOCR(ocrResult);
-        // return await this.medsService.extractMeds(ocrResult);
+    ): Promise<MedListDTO> {
+        // return await this.medsService.handleOCR(ocrResult);
+        return await this.medsService.extractMeds(ocrResult);
     }
 
+    @Post('eMedInfo')
+    @ApiOperation({ summary: 'Get e-Med Information from MedListDTO' })
+    @ApiResponse({
+        status: 201,
+        description: 'Successfully returned e-Med informations',
+    })
+    async getMedInfo(
+        @Body()
+        medList: MedListDTO
+    ): Promise<Med[]> {
+        // return await this.medsService.handleOCR(ocrResult);
+        return await this.medsService.getMedInfoList(medList);
+    }
     /*
     @Get()
     async gptresponse(): Promise<MedListDTO> {

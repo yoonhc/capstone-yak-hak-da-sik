@@ -19,7 +19,7 @@ import { SeedModule } from './seed/seed.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: // DELETED ,
+      password: '', //DELETED
       database: 'yakhakdasik',
       autoLoadEntities: true,
       synchronize: true,

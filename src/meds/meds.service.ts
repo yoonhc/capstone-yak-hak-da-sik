@@ -27,11 +27,6 @@ export class MedsService {
         return extractedText;
     }
 
-    async handleOCR(ocrResult: OCRResultDTO): Promise<Med[]> {
-        const medList = await this.extractMeds(ocrResult);
-        return this.getMedInfoList(medList);
-    }
-
     // MedListDTO를 인수로 받아서 Med(e약은요 정보) 배열들을 반환
     async getMedInfoList(medListDTO: MedListDTO): Promise<Med[]> {
 
