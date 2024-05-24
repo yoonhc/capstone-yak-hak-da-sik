@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Pill } from './pill.entity';
 import { Med } from '../meds/med.entity';
 import { MedsService } from '../meds/meds.service';
+import { PillFilterDTO } from './dto/pill-filter-dto';
 
 @Injectable()
 export class PillsService {
@@ -13,18 +14,17 @@ export class PillsService {
         private pillRepository: Repository<Pill>,
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
-        private readonly configService: ConfigService,
         private medsService: MedsService
     ) {}
 
-    async getMedInfoPage(pill: Pill, page: number, limit: number = 10): Promise<Med[]> {
+    async getMedInfoPage(filter: PillFilterDTO, page: number, limit: number = 10): Promise<Med[]> {
         const conditions = {};
-        if (pill.drugShape !== null) conditions['drugShape'] = pill.drugShape;
-        if (pill.colorClass1 !== null) conditions['colorClass1'] = pill.colorClass1;
-        if (pill.colorClass2 !== null) conditions['colorClass2'] = pill.colorClass2;
-        if (pill.lineFront !== null) conditions['lineFront'] = pill.lineFront;
-        if (pill.lineBack !== null) conditions['lineBack'] = pill.lineBack;
-        if (pill.formCodeName !== null) conditions['formCodeName'] = pill.formCodeName;
+        if (filter.drugShape !== null) conditions['drugShape'] = filter.drugShape;
+        if (filter.colorClass1 !== null) conditions['colorClass1'] = filter.colorClass1;
+        if (filter.colorClass2 !== null) conditions['colorClass2'] = filter.colorClass2;
+        if (filter.lineFront !== null) conditions['lineFront'] = filter.lineFront;
+        if (filter.lineBack !== null) conditions['lineBack'] = filter.lineBack;
+        if (filter.formCodeName !== null) conditions['formCodeName'] = filter.formCodeName;
 
         const [results, total] = await this.pillRepository.findAndCount({
             where: conditions,
@@ -61,7 +61,6 @@ export class PillsService {
                 }
             })
         );
-
         return meds;
     }
 }

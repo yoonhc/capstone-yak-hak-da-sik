@@ -9,7 +9,7 @@ import { Med } from './med.entity';
 @ApiTags('meds')
 export class MedsController {
     constructor(private medsService: MedsService) { }
-    @Post()
+    @Post('extract')
     @ApiOperation({ summary: 'Extract Medicatrions from OCR Result' })
     @ApiResponse({
         status: 201,
@@ -22,7 +22,7 @@ export class MedsController {
         return await this.medsService.extractMeds(ocrResult);
     }
 
-    @Post('eMedInfo')
+    @Post('get-info')
     @ApiOperation({ summary: 'Get e-Med Information from MedListDTO' })
     @ApiResponse({
         status: 201,
