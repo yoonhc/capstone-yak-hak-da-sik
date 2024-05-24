@@ -6,6 +6,7 @@ import { Med } from '../meds/med.entity';
 import { PillFilterDTO } from './dto/pill-filter-dto';
 
 @Controller('pills')
+@ApiTags('pills')
 export class PillsController {
     constructor(private pillsService: PillsService) {}
 
