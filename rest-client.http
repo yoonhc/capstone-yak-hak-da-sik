@@ -1,9 +1,21 @@
 ### EXTRACT MEDICATIONS
-POST http://localhost:3000/meds
+POST http://localhost:3000/meds/extract
 Content-Type: application/json
 
 {"text": "방 의약품의 명칭\n1회 투약\n2080) 페티노정\n1\n160) 유한다이크로짇정\n0.5\n150) 다이트정\n1\n560) 아카펜에스정\n1\n400)신일엠정\n1"}
 
-
 ### EXTRACT MEDICATIONS
-GET http://localhost:3000/meds
+POST http://localhost:3000/meds/get-info
+Content-Type: application/json
+
+{
+  "medications": [
+    "이벤캡슐",
+    "제스판골드정",
+    "제니드정",
+    "아카펜에스정"
+  ]
+}
+
+### GET FILTERED PILLS LIST
+GET http://localhost:3000/pills

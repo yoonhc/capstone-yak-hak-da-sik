@@ -9,7 +9,7 @@ import { Med } from './med.entity';
 @ApiTags('meds')
 export class MedsController {
     constructor(private medsService: MedsService) { }
-    @Post()
+    @Post('extract')
     @ApiOperation({ summary: 'Extract Medicatrions from OCR Result' })
     @ApiResponse({
         status: 201,
@@ -19,11 +19,10 @@ export class MedsController {
         @Body()
         ocrResult: OCRResultDTO
     ): Promise<MedListDTO> {
-        // return await this.medsService.handleOCR(ocrResult);
         return await this.medsService.extractMeds(ocrResult);
     }
 
-    @Post('eMedInfo')
+    @Post('get-info')
     @ApiOperation({ summary: 'Get e-Med Information from MedListDTO' })
     @ApiResponse({
         status: 201,
@@ -36,18 +35,4 @@ export class MedsController {
         // return await this.medsService.handleOCR(ocrResult);
         return await this.medsService.getMedInfoList(medList);
     }
-    /*
-    @Get()
-    async gptresponse(): Promise<MedListDTO> {
-      try {
-        // Call the async service method
-        await this.medsService.getGPTResponse();
-        return {};
-      } catch (error) {
-        // Handle errors
-        throw new HttpException('Failed to extract medications', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-  
-    }
-    */
 }
