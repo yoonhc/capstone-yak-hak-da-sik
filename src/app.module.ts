@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 // import { typeOrmAsyncConfig } from 'db/data-source';
 import { PillsModule } from './pills/pills.module';
 import { SeedModule } from './seed/seed.module';
+import { MedRefsModule } from './med-refs/med-refs.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { SeedModule } from './seed/seed.module';
     }),
     MedsModule,
     PillsModule,
-    SeedModule
+    SeedModule,
+    MedRefsModule
   ],
   controllers: [AppController],
   providers: [AppService],
