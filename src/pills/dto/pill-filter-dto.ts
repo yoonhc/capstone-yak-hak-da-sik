@@ -9,6 +9,11 @@ export class PillFilterDTO {
     @ApiPropertyOptional()
     @IsString()
     @IsOptional()
+    medName?: string;
+
+    @ApiPropertyOptional()
+    @IsString()
+    @IsOptional()
     drugShape?: string;      // 모양
 
     @ApiPropertyOptional()

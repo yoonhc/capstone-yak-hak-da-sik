@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, ILike } from 'typeorm';
 import { Pill } from './pill.entity';
 import { Med } from '../meds/med.entity';
 import { MedsService } from '../meds/meds.service';
@@ -20,6 +20,7 @@ export class PillsService {
 
     async getMedInfoPage(pill: PillFilterDTO, page: number, limit: number = 10): Promise<Med[]> {
         const conditions = {};
+        if (pill.medName !== null) conditions['medName'] = ILike(`%${pill.medName}%`);
         if (pill.drugShape !== null) conditions['drugShape'] = pill.drugShape;
         if (pill.colorClass1 !== null) conditions['colorClass1'] = pill.colorClass1;
         if (pill.colorClass2 !== null) conditions['colorClass2'] = pill.colorClass2;
