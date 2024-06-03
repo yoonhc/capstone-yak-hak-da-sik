@@ -16,15 +16,15 @@ export class MedRef {
     enum: ['전문의약품', '일반의약품'],
     nullable: false,
   })
-  medType: string;
+  medType: string;          // 전문/일반의약품
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   image: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
-  medClass: string;
+  medClass: string;         // e.g. 진해거담제
 
   // 나중에 array 로 바꿔야함 dur: string[]; array: true
   @Column({ type: 'varchar', nullable: true })
-  dur: string;
+  dur: string;              // 병용금지 dur정보
 }

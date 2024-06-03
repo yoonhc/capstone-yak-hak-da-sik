@@ -11,6 +11,7 @@ import { DataSource } from 'typeorm';
 import { PillsModule } from './pills/pills.module';
 import { SeedModule } from './seed/seed.module';
 import { MedRefsModule } from './med-refs/med-refs.module';
+import { DursModule } from './durs/durs.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { MedRefsModule } from './med-refs/med-refs.module';
     MedsModule,
     PillsModule,
     SeedModule,
-    MedRefsModule
+    MedRefsModule,
+    DursModule
   ],
   controllers: [AppController],
   providers: [AppService],
