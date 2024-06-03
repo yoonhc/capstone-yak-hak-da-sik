@@ -5,7 +5,7 @@ import { OCRResultDTO } from './dto/ocr-result-dto';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Med } from './med.entity';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { targetModulesByContainer } from '@nestjs/core/router/router-module';
 
 @Injectable()
@@ -41,15 +41,21 @@ export class MedsService {
             try {
                 return await this.getMedInfoByName(medName);
             } catch (error) {
-                // 만약 없다면, null값 채워넣고 로그 출력
-                console.error(`Error fetching medicine: ${medName}`, error.message);
-                return null;
+                // 정확히 일치하는 값이 없다면 문자열을 포함하는 조건으로 검색
+                try {
+                    const likeResults = await this.getMedInfoByLikeName(medName);
+                    return likeResults;  // 이름을 포함하는 결과 반환
+                } catch (likeError) {
+                    // 이름을 포함하는 약도 찾지 못했을 경우, 로그 출력 후 null 반환
+                    console.error(`Error fetching medicine: ${medName}`, error.message);
+                    return null;
+                }
             }
         });
 
         const medInfos = await Promise.all(medInfoPromises);
-        // null값은 빼고 반환
-        return medInfos.filter(med => med !== null);
+        // flat() 후 null값은 빼고 반환
+        return medInfos.flat().filter(med => med !== null);
     }
 
     // 약 이름을 인수로 받아서 단일 Med(e약은요) 객체를 반환
@@ -59,12 +65,30 @@ export class MedsService {
                 medName: name,
             }
         })
+
         // 해당하는 약이 없을 시, Exception 발생
-        if(!found) {
+        if (!found) {
             throw new NotFoundException(`Can't find Board with name ${name}`)
         }
+
         return found;
     } 
+
+    // 약 이름을 포함하는 모든 데이터 개체 검색
+    async getMedInfoByLikeName(name: string): Promise<Med[]> {
+        const likeMatches = await this.medRepository.find({
+            where: {
+                medName: ILike(`%${name}%`)
+            }
+        });
+
+        // 결과가 완전히 비었을 경우 Exception 발생
+        if (!likeMatches.length) {
+            throw new NotFoundException(`Can't find any medicine containing the name '${name}'`);   
+        }
+
+        return likeMatches;
+    }
 
     // GPT 결과("약물1, 약물2, 약물3")를 가지고 MedListDTO를 만든다. 
     // 차후에 각각 약물이 맞는지(e.g. db에 있는지) verify하는 기능을 넣어야 할 듯

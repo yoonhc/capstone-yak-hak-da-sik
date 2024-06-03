@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { Pill } from './pill.entity';
 import { Med } from '../meds/med.entity';
 import { MedsService } from '../meds/meds.service';
@@ -14,17 +14,28 @@ export class PillsService {
         private pillRepository: Repository<Pill>,
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
+        private readonly configService: ConfigService,
         private medsService: MedsService
     ) {}
 
-    async getMedInfoPage(filter: PillFilterDTO, page: number, limit: number = 10): Promise<Med[]> {
+    async getMedInfoPage(pill: PillFilterDTO, page: number, limit: number = 10): Promise<Med[]> {
         const conditions = {};
-        if (filter.drugShape !== null) conditions['drugShape'] = filter.drugShape;
-        if (filter.colorClass1 !== null) conditions['colorClass1'] = filter.colorClass1;
-        if (filter.colorClass2 !== null) conditions['colorClass2'] = filter.colorClass2;
-        if (filter.lineFront !== null) conditions['lineFront'] = filter.lineFront;
-        if (filter.lineBack !== null) conditions['lineBack'] = filter.lineBack;
-        if (filter.formCodeName !== null) conditions['formCodeName'] = filter.formCodeName;
+        if (pill.drugShape !== null) conditions['drugShape'] = pill.drugShape;
+        if (pill.colorClass1 !== null) conditions['colorClass1'] = pill.colorClass1;
+        if (pill.colorClass2 !== null) conditions['colorClass2'] = pill.colorClass2;
+        if (pill.lineFront !== null) conditions['lineFront'] = pill.lineFront;
+        if (pill.lineBack !== null) conditions['lineBack'] = pill.lineBack;
+        if (pill.formCodeName !== null) conditions['formCodeName'] = pill.formCodeName;
+
+        if (pill.lengLongMin !== null && pill.lengLongMax !== null) {
+            conditions['lengLong'] = Between(pill.lengLongMin, pill.lengLongMax);
+        }
+        if (pill.lengShortMin !== null && pill.lengShortMax !== null) {
+            conditions['lengShort'] = Between(pill.lengShortMin, pill.lengShortMax);
+        }
+        if (pill.thickMin !== null && pill.thickMax !== null) {
+            conditions['thick'] = Between(pill.thickMin, pill.thickMax);
+        }
 
         const [results, total] = await this.pillRepository.findAndCount({
             where: conditions,
@@ -61,6 +72,7 @@ export class PillsService {
                 }
             })
         );
+
         return meds;
     }
 }

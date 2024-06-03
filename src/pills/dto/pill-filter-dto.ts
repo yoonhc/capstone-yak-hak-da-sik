@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsNumber } from "class-validator";
 
 /**
  * 낱알식별정보 필터 DTO
@@ -35,4 +35,34 @@ export class PillFilterDTO {
     @IsString()
     @IsOptional()
     formCodeName?: string;   // 제형 (정제, 경질, 연질...)
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    lengLongMin: number; // 최소 장축 길이
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    lengLongMax: number; // 최대 장축 길이
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    lengShortMin: number; // 최소 단축 길이
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    lengShortMax: number; // 최대 단축 길이
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    thickMin: number; // 최소 두께
+
+    @ApiPropertyOptional()
+    @IsNumber()
+    @IsOptional()
+    thickMax: number; // 최대 두께
 }
