@@ -20,15 +20,17 @@ export const seedData = async (manager: EntityManager): Promise<void> => {
       const pill = new Pill();
       pill.id = parseInt(row[0], 10);
       pill.medName = row[1];
-      pill.drugShape = row[2];
-      pill.colorClass1 = row[3];
-      pill.colorClass2 = row[4];
-      pill.lineFront = row[5];
-      pill.lineBack = row[6];
-      pill.lengLong = row[7];
-      pill.lengShort = row[8];
-      pill.thick = row[9];
-      pill.formCodeName = row[10];
+      pill.companyName = row[2];
+      pill.image = row[3];
+      pill.drugShape = row[4];
+      pill.colorClass1 = row[5];
+      pill.colorClass2 = row[6];
+      pill.lineFront = row[7];
+      pill.lineBack = row[8];
+      pill.lengLong = row[9];
+      pill.lengShort = row[10];
+      pill.thick = row[11];
+      pill.formCodeName = row[12];
       pills.push(pill);
 
       // Batch insertion every 1000 records or when reaching the end of the file
