@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Like, MoreThan, Not, In } from 'typeorm';
+import { Repository, Between, Like, MoreThan, Not, In, Brackets } from 'typeorm';
 import { Pill } from './pill.entity';
 import { Med } from '../meds/med.entity';
 import { MedsService } from '../meds/meds.service';
@@ -24,65 +24,40 @@ export class PillsService {
         // 조건 등록
         if (pill.medName !== null) conditions['medName'] = Like(`%${pill.medName}%`);
         if (pill.drugShape !== null) conditions['drugShape'] = pill.drugShape;
-        // 색깔 "기타" 처리
-        if (pill.colorClass1 !== null) {
-            if (pill.colorClass1 !== "기타") {
-                conditions['colorClass1'] = Like(`%${pill.colorClass1}%`);
-            } else {
-                conditions['colorClass1'] = Not(In([
-                    Like("%하양%"),
-                    Like("%분홍%"),
-                    Like("%노랑%"),
-                    Like("%주황%"),
-                    Like("%갈색%"),
-                    Like("%파랑%"),
-                    Like("%연두%"),
-                    Like("%초록%"),
-                    Like("%빨강%"),
-                    Like("%회색%"),
-                    Like("%보라%"),
-                    Like("%검정%"),
-                    Like("%청록%"),
-                    Like("%자주%"),
-                    Like("%남색%"),
-                    Like("%갈색%")
-                ]))
-            }
-        }
-
-        if (pill.colorClass2 !== null) {
-            if (pill.colorClass2 !== "기타") {
-                conditions['colorClass2'] = Like(`%${pill.colorClass2}%`);
-            } else {
-                conditions['colorClass2'] = Not(In([
-                    Like("%하양%"),
-                    Like("%분홍%"),
-                    Like("%노랑%"),
-                    Like("%주황%"),
-                    Like("%갈색%"),
-                    Like("%파랑%"),
-                    Like("%연두%"),
-                    Like("%초록%"),
-                    Like("%빨강%"),
-                    Like("%회색%"),
-                    Like("%보라%"),
-                    Like("%검정%"),
-                    Like("%청록%"),
-                    Like("%자주%"),
-                    Like("%남색%"),
-                    Like("%갈색%")
-                ]))
-            }
-        }
+        if (pill.colorClass1 !== null) conditions['colorClass1'] = Like(`%${pill.colorClass1}%`);
+        if (pill.colorClass2 !== null) conditions['colorClass2'] = Like(`%${pill.colorClass2}%`);
         if (pill.lineFront !== null) conditions['lineFront'] = pill.lineFront;
         if (pill.lineBack !== null) conditions['lineBack'] = pill.lineBack;
+
+        // 브래킷으로 NOT LIKE를 여러 개 엮어서 '기타'를 구현하려고 했는데, 자꾸 오류가 생김
+        // 그래서 그냥 "필름코팅정", "나정", "경질캡슐제", "연질캡슐제"를 포함하는 모든 항목을 찾아둠
+        // 여기에 없는 값들을 모두 찾아줄 것임
+        const commonForm = [
+            "필름코팅정",
+            "나정",
+            "경질캡슐제, 산제",
+            "서방성필름코팅정",
+            "연질캡슐제, 액상",
+            "연질캡슐제, 현탁상",
+            "장용성필름코팅정",
+            "경질캡슐제, 과립제",
+            "경질캡슐제, 장용성과립제",
+            "경질캡슐제, 서방성장용성펠렛",
+            "경질캡슐제, 정제",
+            "젤라틴코팅성경질캡슐제",
+            "경질캡슐제, 과립제정제",
+            "서방성장용필름코팅정",
+            "경질캡슐제, 공캡슐"
+        ];
 
         // 제형 "기타" 등록
         if (pill.formCodeName !== null) {
             if (pill.formCodeName !== "기타") {
+                // console.log("기타 외 값 확인됨");
                 conditions['formCodeName'] = Like(`%${pill.formCodeName}%`);
             } else {
-                conditions['formCodeName'] = Not(In([Like("%필름코팅정%"), Like("%나정%"), Like("%경질캡슐제%"), Like("%연질캡슐제%")]));
+                // console.log("기타 확인됨");
+                conditions['formCodeName'] = Not(In(commonForm))
             }
         }
 

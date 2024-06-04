@@ -23,6 +23,7 @@ import { ScrapedMedsModule } from './scraped-meds/scraped-meds.module';
       entities: ["dist/**/*.entity.js"],
       synchronize: false,
       migrations: ["dist/db/migrations/*.js"],
+      logging: true
     }),
     ConfigModule.forRoot({
       envFilePath: ['.env'],
