@@ -12,6 +12,8 @@ import { PillsModule } from './pills/pills.module';
 import { SeedModule } from './seed/seed.module';
 import { MedRefsModule } from './med-refs/med-refs.module';
 import { DursModule } from './durs/durs.module';
+import { GptsModule } from './gpts/gpts.module';
+import { ScrapedMedsModule } from './scraped-meds/scraped-meds.module';
 
 @Module({
   imports: [
@@ -31,7 +33,9 @@ import { DursModule } from './durs/durs.module';
     PillsModule,
     SeedModule,
     MedRefsModule,
-    DursModule
+    DursModule,
+    GptsModule,
+    ScrapedMedsModule
   ],
   controllers: [AppController],
   providers: [AppService],
