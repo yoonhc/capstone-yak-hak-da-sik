@@ -44,30 +44,15 @@ export class PillFilterDTO {
     @ApiPropertyOptional()
     @IsNumber()
     @IsOptional()
-    lengLongMin: number; // 최소 장축 길이
+    lengLongOption: number; // 장축 옵션 (1 ~ 6, 정수값)
 
     @ApiPropertyOptional()
     @IsNumber()
     @IsOptional()
-    lengLongMax: number; // 최대 장축 길이
+    lengShortOption: number; // 단축 옵션 (1 ~ 6, 정수값)
 
     @ApiPropertyOptional()
     @IsNumber()
     @IsOptional()
-    lengShortMin: number; // 최소 단축 길이
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @IsOptional()
-    lengShortMax: number; // 최대 단축 길이
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @IsOptional()
-    thickMin: number; // 최소 두께
-
-    @ApiPropertyOptional()
-    @IsNumber()
-    @IsOptional()
-    thickMax: number; // 최대 두께
+    thickOption: number; // 두께 옵션 (1 ~ 6, 정수값)
 }

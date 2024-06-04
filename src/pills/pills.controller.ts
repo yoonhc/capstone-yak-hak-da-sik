@@ -4,6 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Pill } from './pill.entity';
 import { Med } from '../meds/med.entity';
 import { PillFilterDTO } from './dto/pill-filter-dto';
+import { PillResponseDTO } from './dto/pill-response-dto';
 
 @Controller('pills')
 @ApiTags('pills')
@@ -22,7 +23,7 @@ export class PillsController {
         filter: PillFilterDTO,
         @Query('page') page: number,
         @Query('limit') limit: number
-    ): Promise<Med[]> {
+    ): Promise<PillResponseDTO[]> {
         return await this.pillsService.getMedInfoPage(filter, page, limit);
     }
 }
