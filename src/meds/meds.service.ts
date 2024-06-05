@@ -7,24 +7,52 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Med } from './med.entity';
 import { Repository, ILike } from 'typeorm';
 import { targetModulesByContainer } from '@nestjs/core/router/router-module';
+import { performance } from 'perf_hooks';
+const RE2 = require('re2');
 
 @Injectable()
 export class MedsService {
+    private regex: any;
+    private keywords = [
+        '발행기관', '영수증번호', '조제일', '환자성명', '약제비', '영수증', '사업자등록번호',
+        '조제일자', '전화번호', '서식', '병원', '계산서', '부담금', '발진 주의', '복약안내',
+        '발행', '조제한', '약사', '발전', '합계', '영수증번호', '식후', '약품이미지', '등록번호',
+        '마세요', '하세요', '있어요', '나세요', '아침', '점심', '저녁', '취침 전', '있습니다',
+        '알리세요', '사업장소재지', '신분확인번호', '현금승인번호', '수납금액', '님', '입니다'
+    ];
     constructor(
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
         private readonly configService: ConfigService
-    ) {}
+    ) {
+        // 정규 표현식화
+        const pattern = this.keywords.map(keyword => `${keyword}`).join('|');
+        // 대소문자를 구분하지 않음
+        this.regex = new RE2(pattern, 'i');
+    }
 
     /*
     * JSON 형식인 ocrResult로부터 text를 추출한다 (text: "단어\n단어\n단어")
     * 그 다음 text로부터 쓸데없는 단어를 제외하는 전처리를 거친다.
     */
     preprocessOCR(ocrResult: OCRResultDTO): string {
-        const extractedText: string = ocrResult.text;
+        // 개행문자 (\n)을 기준으로 문장을 나눔
+        // 각 문장이 관련 없는 단어를 포함한다면 제거한다.
 
-        // 아직 전처리는 미구현
-        return extractedText;
+        const lines = ocrResult.text.split('\n');
+        // 키워드를 포함하지 않는 줄만 필터링
+        console.log(`Total lines before preprocessing: ${lines.length}`);
+        const filteredLines = lines.filter(line => {
+            const isMatch = this.regex.test(line.trim());
+            // console.log(`Testing line: ${line.trim()}`)
+            // console.log(`Match: ${isMatch}`);
+            if (!isMatch)
+                return line.trim();
+        });
+        const preprocessedText = filteredLines.join('\n');
+        console.log(preprocessedText);
+        console.log(`Total lines after preprocessing: ${filteredLines.length}`);
+        return preprocessedText;
     }
 
     // MedListDTO를 인수로 받아서 Med(e약은요 정보) 배열들을 반환
@@ -102,8 +130,20 @@ export class MedsService {
 
     // responsebody에 있는 ocrResult를 가지고 약물 리스트인 MedListDTO 반환
     async extractMeds(ocrResult: OCRResultDTO): Promise<MedListDTO> {
+        // 이건 성능 비교한다고 잠시 써뒀던 건데, 궁금하면 주석 풀어서 비교해보면 됨
+        // 사실 짧은 문장의 경우 큰 성능의 차이는 나지 않지만, 이후 확장성까지 고려하면 이런 기능은 중요함
+        // 지금은 캡스톤 프로젝트 수준이어서 크게 와닿지 않을지 몰라도, 
+        // 프로젝트 규모가 커지고 사용자가 늘어나면 대규모 데이터에 대한 처리가 필요할 수 있음
         const preprocessed: string = this.preprocessOCR(ocrResult);
-        return this.refineGPTResult(await this.getGPTResponse(preprocessed));
+        // const startTime = performance.now();
+        // console.log(this.refineGPTResult(await this.getGPTResponse(ocrResult.text)));
+        // const endTime = performance.now();
+        // console.log(`raw response time: ${endTime - startTime}ms`);
+        // const pstartTime = performance.now();
+        const result = this.refineGPTResult(await this.getGPTResponse((preprocessed)));
+        // const pendTime = performance.now();
+        // console.log(`preprocessed response time: ${pendTime - pstartTime}ms`);
+        return result;
     }
 
     // 전처리된 ocr결과를 GPT에 요청해 약물 리스트를 "약물1, 약물2, 약물3"
