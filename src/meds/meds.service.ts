@@ -138,16 +138,4 @@ export class MedsService {
             console.log("No message content found in the response.");
         }
     }
-
-    //create(): Promise<Med> {}
-
-    //update(): Promise<Med> {}
-
-    //find(): Promise<Med[]> {}
-
-    //findOne(id: number) : Promise<Med> {}
-
-    //(검새창에 이름으로 검색하는 경우. med-ref쓰면 될듯)
-    //findOneByName
-
 }

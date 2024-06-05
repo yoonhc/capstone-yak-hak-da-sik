@@ -1,0 +1,12 @@
+{
+    "newMedications": [
+      "Aspirin",
+      "Ibuprofen",
+      "Paracetamol"
+    ],
+    "currentMedications": [
+      101,
+      202,
+      303
+    ]
+  }

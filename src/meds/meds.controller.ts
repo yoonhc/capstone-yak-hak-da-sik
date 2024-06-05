@@ -4,6 +4,8 @@ import { MedListDTO } from './dto/med-list-dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { OCRResultDTO } from './dto/ocr-result-dto';
 import { Med } from './med.entity';
+import { MedRequestDTO } from './dto/med-request-dto';
+import { MedResponseDTO } from './dto/med-response-dto';
 
 @Controller('meds')
 @ApiTags('meds')
@@ -23,16 +25,16 @@ export class MedsController {
     }
 
     @Post('get-info')
-    @ApiOperation({ summary: 'Get e-Med Information from MedListDTO' })
+    @ApiOperation({ summary: 'Get Med Informations and DUR Results(MedResponseDTO)' })
     @ApiResponse({
         status: 201,
         description: 'Successfully returned e-Med informations',
     })
     async getMedInfo(
         @Body()
-        medList: MedListDTO
-    ): Promise<Med[]> {
-        // return await this.medsService.handleOCR(ocrResult);
-        return await this.medsService.getMedInfoList(medList);
+        medList: MedRequestDTO
+    ): Promise<MedResponseDTO> {
+        // 서비스 만들어서 구현해야함
+        return
     }
 }
