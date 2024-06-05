@@ -11,6 +11,12 @@ export class MedInfoDTO {
     @IsNotEmpty()
     id: number;             // med-ref의 id에서
 
+    // e.g. 베로나에스정,
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    medName: string;             // med-ref의  medName에서
+
     // e.g. 제이더블유중외제약(주)
     @ApiProperty()
     @IsString()

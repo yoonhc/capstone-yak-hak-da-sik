@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsString } from "class-validator";
+import { IsArray } from "class-validator";
 import { MedInfoDTO } from "./med-info-dto";
+import { DURInfoDTO } from "src/durs/dto/dur-info-dto";
 
 export class MedResponseDTO {
     @ApiProperty()
@@ -9,6 +10,5 @@ export class MedResponseDTO {
 
     @ApiProperty()
     @IsArray()
-    @IsString({ each: true })
-    durResult?: string[];
+    durInfos?: DURInfoDTO[];
 }
