@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('med-refs')
 export class MedRef {
-@PrimaryColumn({ type: 'int', width: 9 })
+  @PrimaryColumn({ type: 'int', width: 9 })
   id: number;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
