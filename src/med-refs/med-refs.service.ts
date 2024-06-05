@@ -8,7 +8,7 @@ export class MedRefsService {
     constructor(
         @InjectRepository(MedRef)
         private medRefRepository: Repository<MedRef>,
-    ) { }
+    ) {}
 
     /**
      * 이름을 통해 제일 매칭이 잘되는 것 반환. 여기에 넣기 argument로 넣기 전에

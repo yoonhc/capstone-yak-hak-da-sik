@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config';
 import { SeedService } from './seed/seed.service';
+import { ScrapedMedsService } from './scraped-meds/scraped-meds.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
