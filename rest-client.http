@@ -23,7 +23,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/scraped-meds/201600358
+GET http://localhost:3000/scraped-meds/199703126
 
 ### GET FILTERED PILLS LIST
 GET http://localhost:3000/pills

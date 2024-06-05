@@ -7,6 +7,6 @@ import { Repository } from 'typeorm';
 export class DursService {
     constructor(
         @InjectRepository(DUR)
-        private medRefRepository: Repository<DUR>,
+        private durRepository: Repository<DUR>,
     ) { }
 }

@@ -9,17 +9,17 @@ import * as cheerio from 'cheerio';
 export class ScrapedMedsService {
     constructor(
         @InjectRepository(ScrapedMed)
-        private medRefRepository: Repository<ScrapedMed>,
+        private scrapedMedRepository: Repository<ScrapedMed>,
     ) { }
 
-    async getScrapedMeds(id: number): Promise<string> {
+    async getScrapedMeds(id: number): Promise<ScrapedMed> {
         try {
             const url = "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetailCache?cacheSeq="
             + id + "aupdateTs2024-05-05%15:42:27.0b"
             // Specify request headers
             const config: AxiosRequestConfig = {
                 headers: {
-                    'Accept': 'text/html', // Specify that you want HTML content
+                    'Accept': 'text/html', // 이거 안하면 JSON 반환할 떄도 있어서 에러생김
                 },
             };
             // Make the request with specified headers
@@ -27,8 +27,30 @@ export class ScrapedMedsService {
             
             const $ = cheerio.load(data);
 
-            const effectInfo = this.extractHowToStoreInfo($)
-            return effectInfo
+            const effectInfo = this.extractEffectInfo($)
+            const howToUseInfo = this.extractHowToUseInfo($)
+            const warningInfo = this.extractWarningInfo($)
+            const howToStoreInfo= this.extractHowToStoreInfo($)
+
+            // Ensure effectInfo and howToStoreInfo are not empty strings
+            // There are cases where response is 200 but all the fields are empty string
+            if (!effectInfo || !howToStoreInfo) {
+                throw new HttpException(
+                    'Required information missing: effectInfo or howToStoreInfo is empty',
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            // Create a new ScrapedMed entity
+            const scrapedMed = new ScrapedMed();
+            scrapedMed.id = id;
+            scrapedMed.effect = effectInfo;
+            scrapedMed.howToUse = howToUseInfo;
+            scrapedMed.warning = warningInfo;
+            scrapedMed.howToStore = howToStoreInfo;
+
+            await this.scrapedMedRepository.save(scrapedMed);
+            return scrapedMed;
+            
         } catch (error) {
             throw new HttpException(
                 'Error fetching or parsing the HTML content',
