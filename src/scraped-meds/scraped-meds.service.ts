@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as cheerio from 'cheerio';
+import { MedSummary } from 'src/gpts/med-summary.entity';
 
 @Injectable()
 export class ScrapedMedsService {
@@ -203,4 +204,5 @@ export class ScrapedMedsService {
             return ''; // Return an empty string or handle the error accordingly
         }
     }
+
 }

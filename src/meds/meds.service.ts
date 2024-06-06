@@ -16,6 +16,7 @@ import { DursService } from 'src/durs/durs.service';
 import { ScrapedMedsService } from 'src/scraped-meds/scraped-meds.service';
 import { ScrapedMed } from 'src/scraped-meds/scraped-med.entity';
 import { GPTSummaryDTO } from 'src/gpts/dto/gpt-summary-dto';
+import { MedSummary } from 'src/gpts/med-summary.entity';
 const RE2 = require('re2');
 
 @Injectable()
@@ -31,11 +32,12 @@ export class MedsService {
     constructor(
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
+        private medSummaryRepository: Repository<MedSummary>,
         private readonly configService: ConfigService,
         private gptService: GptsService,
         private medRefsService: MedRefsService,
         private dursService: DursService,
-        private scrapedMedsService: ScrapedMedsService
+        private scrapedMedsService: ScrapedMedsService,
     ) {
         // 정규 표현식화
         const pattern = this.keywords.map(keyword => `${keyword}`).join('|');
@@ -125,6 +127,10 @@ export class MedsService {
                     medInfoDTO.effect = med.effect;
                     medInfoDTO.howToUse = med.howToUse;
                     medInfoDTO.howToStore = med.howToStore;
+                    medInfoDTO.detailedCriticalInfo = med.criticalInfo;
+                    medInfoDTO.detailedInteraction = med.interaction;
+                    medInfoDTO.detailedSideEffect = med.sideEffect;
+                    medInfoDTO.detailedWarning = med.warning;
 
                     // GPT에 전달할 항목
                     // criticalInfo, warning, interaction, sideEffect
@@ -143,20 +149,40 @@ export class MedsService {
 
                     // scrapedMed의 정보를 그대로 옮김
                     // effect, howToUse, howToStore
-                    medInfoDTO.effect = scrapedMed.effect;
-                    medInfoDTO.howToUse = scrapedMed.howToUse;
+                    // medInfoDTO.effect = scrapedMed.effect;
+                    // medInfoDTO.howToUse = scrapedMed.howToUse;
                     medInfoDTO.howToStore = scrapedMed.howToStore;
 
                     // GPT에 전달할 항목
                     // effect, howToUse, warning
-                    textToSummarize = scrapedMed.effect + '\n'
-                    + scrapedMed.howToUse + '\n'
-                    + scrapedMed.warning;
+                    textToSummarize = '<effect>: ' + scrapedMed.effect + '\n'
+                    + '<howToUse>: ' + scrapedMed.howToUse + '\n'
+                    + '<warning>:' + scrapedMed.warning;
                 }
-
+                // gpt도 정보 있는지 확인하는 로직
                 // GPT 요약 정보 받아옴
-                const summarizedInfo = await this.gptService.gptSummarizeMeds(textToSummarize);
+                let summarizedInfo: MedSummary = null
+                try {
+                    // MedSummary 정보 접근
+                    summarizedInfo = await this.gptService.getMedSummaryByID(medInfoDTO.id);
+                } catch {   // db에 없다면
+                    const gptSummaryDTO = await this.gptService.gptSummarizeMeds(textToSummarize);
+                    summarizedInfo.id = medInfoDTO.id;
+                    summarizedInfo.foodInteraction = gptSummaryDTO.foodInteraction;
+                    summarizedInfo.genaralWarn = gptSummaryDTO.genaralWarn;
+                    summarizedInfo.medInteraction = gptSummaryDTO.medInteraction;
+                    summarizedInfo.pillCheck = gptSummaryDTO.pillCheck;
+                    summarizedInfo.pregnancyWarn = gptSummaryDTO.pregnancyWarn;
+                    summarizedInfo.suppInteraction = gptSummaryDTO.suppInteraction;
+                    summarizedInfo.underlyingConditionWarn = gptSummaryDTO.underlyingConditionWarn;
+                    summarizedInfo.effect = gptSummaryDTO.effect;
+                    this.medSummaryRepository.save(summarizedInfo)
+                }   
 
+                // effect 항목이 없으면. 즉 scrapedMeds인 경우
+                if(medInfoDTO.effect = null) {
+                    medInfoDTO.effect = summarizedInfo.effect;
+                }
                 // GPT 요약 정보 옮기기
                 medInfoDTO.pillCheck = summarizedInfo.pillCheck;
                 medInfoDTO.medInteraction = summarizedInfo.medInteraction;

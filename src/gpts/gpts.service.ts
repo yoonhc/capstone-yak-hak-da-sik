@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MedSummary } from './med-summary.entity';
 import { Repository } from 'typeorm';
@@ -161,5 +161,16 @@ export class GptsService {
         } else {
             console.log("No message content found in the response.");
         }
+    }
+    async getMedSummaryByID(medID: number): Promise<MedSummary> {
+        const found = await this.medSummaryRepository.findOne({
+            where: {
+                id: medID,
+            }
+        })
+        if (!found) {
+            throw new NotFoundException(`Can't find GPT-info with id ${medID}`);
+        }
+        return found;
     }
 }
