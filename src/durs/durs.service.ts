@@ -40,9 +40,15 @@ export class DursService {
         // MedRefList의 모든 entity당 durCombined 리스트를 추출하여 dur이 key, 해당 dur을 가지고 있는 약 id를 value로 하는 Map을 만든다
         MedRefLists.forEach(async medRef => {
             // Split the durCombined field into individual elements
-            const durElements = medRef.durCombined.split('/');
-            const contraindicateDURElements = medRef.contraindicateDUR.split('/');
+            let durElements: string[] = [];
+            let contraindicateDURElements: string[] = [];
 
+            if(medRef.durCombined) {
+                durElements = medRef.durCombined.split('/');
+            }
+            if(medRef.contraindicateDUR) {
+                contraindicateDURElements = medRef.contraindicateDUR.split('/');
+            }
             // Iterate over each durElement
             durElements.forEach(durElement => {
                 // Trim any whitespace from durElement
@@ -57,7 +63,6 @@ export class DursService {
                     durElementMap.set(trimmedElement, [medRef.id]);
                 }
             });
-
             // 모든 entity당 병용금기 dur 요소(DUR 성분코드)를 추출하여 이를 원소로 가지고 있는 Set을 만든다.
             contraindicateDURElements.forEach(contraindicateDURElement => {
                 // Trim any whitespace from contraindicateDURElement
@@ -73,7 +78,7 @@ export class DursService {
                     durCode: durCode
                 }
             });
-            if (durEntities.length > 0) {   // durcode에 해당하는 entity가 존재한다면(사실 항상 존재)
+            if (durEntities.length > 0) {   // durcode에 해당하는 entity가 존재한다면
                 // Iterate over each DUR entity
                 for (const durEntity of durEntities) {  // durEntity의 모든 null이 아닌 dur element가 Map에 존재하는지 판단
                     if (durElementMap.has(durEntity.contraindicateDUR)) {
@@ -131,8 +136,8 @@ export class DursService {
 
     findUniqueItemGroups(durEntity: DUR, durElementMap: Map<string, number[]>): Set<Set<number>> {
         const durSetArray: number[][] = [];
-        const durCodeItem = durElementMap[durEntity.durCode]
-        const contraindicateDURItem = durElementMap[durEntity.contraindicateDUR]
+        const durCodeItem: number[] = durElementMap.get(durEntity.durCode);
+        const contraindicateDURItem: number[] = durElementMap.get(durEntity.contraindicateDUR)
         let combinationDURs: string[] = []
         let contraindicateCombinationDURs: string[] = []
 
@@ -148,7 +153,6 @@ export class DursService {
         if (contraindicateDURItem) {
             durSetArray.push(contraindicateDURItem);
         }
-
         if (combinationDURs.length > 0) {
             combinationDURs.forEach(item => {
                 const durItem = durElementMap.get(item);
@@ -166,6 +170,8 @@ export class DursService {
                 }
             });
         }
+        console.log(durSetArray)
+
         const uniqueCombinations = new Set<Set<number>>();
         const generateCombinations = (currentCombination: Set<number>, index: number) => {
             if (index === durSetArray.length) {
@@ -180,7 +186,7 @@ export class DursService {
             });
         };
         generateCombinations(new Set(), 0);
-
+        console.log(uniqueCombinations)
         return uniqueCombinations
     }
 }

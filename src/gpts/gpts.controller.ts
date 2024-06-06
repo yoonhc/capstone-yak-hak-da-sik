@@ -9,10 +9,9 @@ export class GptsController {
 
     @Post()
     async getScrapedMeds(
-        @Body()
-        textToSummarize: string
+        @Body() body: any
     ): Promise<GPTSummaryDTO> {
-        console.log(textToSummarize)
+        const textToSummarize: string = body.textToSummarize
         return this.gptService.gptSummarizeMeds(textToSummarize);
     }
 }
