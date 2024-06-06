@@ -5,12 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Med } from './med.entity';
 import { GptsModule } from 'src/gpts/gpts.module';
 import { MedRefsModule } from 'src/med-refs/med-refs.module';
+import { DursModule } from 'src/durs/durs.module';
+import { ScrapedMedsModule } from 'src/scraped-meds/scraped-meds.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Med]),
     GptsModule,
-    MedRefsModule
+    MedRefsModule,
+    DursModule,
+    ScrapedMedsModule
   ],
   controllers: [MedsController],
   providers: [MedsService],

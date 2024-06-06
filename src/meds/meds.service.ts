@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MedListDTO } from './dto/med-list-dto';
+import { MedInfoDTO } from './dto/med-info-dto';
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { OCRResultDTO } from './dto/ocr-result-dto';
+import { MedResponseDTO } from './dto/med-response-dto';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Med } from './med.entity';
@@ -10,6 +12,10 @@ import { targetModulesByContainer } from '@nestjs/core/router/router-module';
 import { performance } from 'perf_hooks';
 import { GptsService } from 'src/gpts/gpts.service';
 import { MedRefsService } from 'src/med-refs/med-refs.service';
+import { DursService } from 'src/durs/durs.service';
+import { ScrapedMedsService } from 'src/scraped-meds/scraped-meds.service';
+import { ScrapedMed } from 'src/scraped-meds/scraped-med.entity';
+import { GPTSummaryDTO } from 'src/gpts/dto/gpt-summary-dto';
 const RE2 = require('re2');
 
 @Injectable()
@@ -27,7 +33,9 @@ export class MedsService {
         private medRepository: Repository<Med>,
         private readonly configService: ConfigService,
         private gptService: GptsService,
-        private medRefsService: MedRefsService
+        private medRefsService: MedRefsService,
+        private dursService: DursService,
+        private scrapedMedsService: ScrapedMedsService
     ) {
         // 정규 표현식화
         const pattern = this.keywords.map(keyword => `${keyword}`).join('|');
@@ -58,7 +66,131 @@ export class MedsService {
         console.log(`Total lines after preprocessing: ${filteredLines.length}`);
         return preprocessedText;
     }
+    
+    // 등록 누르는 순간에
+    /*
+    {
+        "medications": [
+          "록솔정",
+          "케라네일캡슐",
+          "에프벡스쿨플라스타(플루르비프로펜)"
+        ],
+        "currentMedications": [
+          201938292,
+          199920102,
+          281928181
+        ]
+    }
+    */
+    async getMedResponse(medListDTO: MedListDTO): Promise<MedResponseDTO> {
+        // e약은요에서 찾고, 없으면 스크랩 정보 가져오기
+        let medResponseDTO: MedResponseDTO;
+        let IDs: number[];
+        for (const medName of medListDTO.medications) {
+            let medInfoDTO = new MedInfoDTO();
+            try {
+                // medRef 객체 얻기
+                const medRef = await this.medRefsService.findBestMatchByName(medName);
+                // medRef 정보 옮기기
+                medInfoDTO.id = medRef.id;
+                IDs.push(medInfoDTO.id);
+                medInfoDTO.medName = medRef.medName;
+                medInfoDTO.companyName = medRef.companyName;
+                medInfoDTO.image = medRef.image;
+                medInfoDTO.medClass = medRef.medClass;
+                medInfoDTO.medType = medRef.medType;
 
+                // 필요한 것
+                // effect e약은요 or 스크랩
+                // howToUse e약은요 or 스크랩
+                // howToStore e약은요 or 스크랩
+
+                // pillCheck GPT
+                // medInteraction GPT
+                // underlyingConditionWarn GPT
+                // generalWarn GPT
+                // pregnancyWarn GPT
+                // foodInteraction GPT
+                // suppInteraction GPT
+
+                let textToSummarize: string;
+                try {
+                    // e약은요 정보 접근
+                    const med = await this.getMedInfoByID(medInfoDTO.id);
+
+                    // med의 정보를 그대로 옮김
+                    // effect, howToUse, howToStore
+                    medInfoDTO.effect = med.effect;
+                    medInfoDTO.howToUse = med.howToUse;
+                    medInfoDTO.howToStore = med.howToStore;
+
+                    // GPT에 전달할 항목
+                    // criticalInfo, warning, interaction, sideEffect
+                    textToSummarize = med.criticalInfo + '\n'
+                    + med.warning + '\n'
+                    + med.interaction + '\n'
+                    + med.sideEffect;
+                } catch { // e약은요 정보 없을 경우
+                    // 스크랩 정보 접근
+                    let scrapedMed: ScrapedMed;
+                    try { // DB 접근 시도
+                        scrapedMed = await this.scrapedMedsService.getSavedScrap(medInfoDTO.id);
+                    } catch { // DB에 없으면 받아옴
+                        scrapedMed = await this.scrapedMedsService.getScrapedMeds(medInfoDTO.id);
+                    }
+
+                    // scrapedMed의 정보를 그대로 옮김
+                    // effect, howToUse, howToStore
+                    medInfoDTO.effect = scrapedMed.effect;
+                    medInfoDTO.howToUse = scrapedMed.howToUse;
+                    medInfoDTO.howToStore = scrapedMed.howToStore;
+
+                    // GPT에 전달할 항목
+                    // effect, howToUse, warning
+                    textToSummarize = scrapedMed.effect + '\n'
+                    + scrapedMed.howToUse + '\n'
+                    + scrapedMed.warning;
+                }
+
+                // GPT 요약 정보 받아옴
+                const summarizedInfo = await this.gptService.gptSummarizeMeds(textToSummarize);
+
+                // GPT 요약 정보 옮기기
+                medInfoDTO.pillCheck = summarizedInfo.pillCheck;
+                medInfoDTO.medInteraction = summarizedInfo.medInteraction;
+                medInfoDTO.underlyingConditionWarn = summarizedInfo.underlyingConditionWarn;
+                medInfoDTO.genaralWarn = summarizedInfo.genaralWarn;
+                medInfoDTO.pregnancyWarn = summarizedInfo.pregnancyWarn;
+                medInfoDTO.foodInteraction = summarizedInfo.foodInteraction;
+                medInfoDTO.suppInteraction = summarizedInfo.suppInteraction;
+
+                // 이거 만듦?
+                // detailedCriticalInfo
+                // detailedWarning
+                // detailedInteraction
+                // detailedSideEffect
+
+                // medInfos에 저장
+                medResponseDTO.medInfos.push(medInfoDTO);
+
+            } catch (e) { // 애초에 약 이름이 잘못된 경우. 스킵
+                console.error(`No medication found: ${medName}`);
+                continue;
+            }
+        }
+
+        // current medications까지 포함
+        for (const id of medListDTO.currentMedications) {
+            IDs.push(id);
+        }
+
+        // DUR정보 얻기
+        medResponseDTO.durInfos = await this.dursService.getDURINfo(IDs);
+
+        return medResponseDTO;
+    }
+
+    // 이거 죽었음, 쓰지마
     // MedListDTO를 인수로 받아서 Med(e약은요 정보) 배열들을 반환
     async getMedInfoList(medListDTO: MedListDTO): Promise<Med[]> {
 
@@ -88,6 +220,20 @@ export class MedsService {
         const medInfos = await Promise.all(medInfoPromises);
         // flat() 후 null값은 빼고 반환
         return medInfos.flat().filter(med => med !== null);
+    }
+
+    async getMedInfoByID(medID: number): Promise<Med> {
+        const found = await this.medRepository.findOne({
+            where: {
+                id: medID,
+            }
+        })
+
+        if (!found) {
+            throw new NotFoundException(`Can't find E-info with id ${medID}`);
+        }
+
+        return found;
     }
 
     // 약 이름을 인수로 받아서 단일 Med(e약은요) 객체를 반환

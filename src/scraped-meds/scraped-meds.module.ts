@@ -9,6 +9,7 @@ import { ScrapedMedsController } from './scraped-meds.controller';
     TypeOrmModule.forFeature([ScrapedMed]),
   ],
   providers: [ScrapedMedsService],
-  controllers: [ScrapedMedsController]
+  controllers: [ScrapedMedsController],
+  exports: [ScrapedMedsService]
 })
 export class ScrapedMedsModule {}

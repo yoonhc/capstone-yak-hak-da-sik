@@ -8,6 +8,7 @@ import { MedRefsModule } from 'src/med-refs/med-refs.module';
     TypeOrmModule.forFeature([DUR]),
     MedRefsModule
   ],
-  providers: [DursService]
+  providers: [DursService],
+  exports: [DursService]
 })
 export class DursModule {}

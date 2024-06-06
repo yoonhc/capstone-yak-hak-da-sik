@@ -35,6 +35,6 @@ export class MedsController {
         medList: MedRequestDTO
     ): Promise<MedResponseDTO> {
         // 서비스 만들어서 구현해야함
-        return
+        return await this.medsService.getMedResponse(medList);
     }
 }

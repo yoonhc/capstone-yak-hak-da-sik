@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ScrapedMed } from './scraped-med.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +11,20 @@ export class ScrapedMedsService {
         @InjectRepository(ScrapedMed)
         private scrapedMedRepository: Repository<ScrapedMed>,
     ) { }
+
+    async getSavedScrap(medID: number): Promise<ScrapedMed> {
+        const found = await this.scrapedMedRepository.findOne({
+            where: {
+                id: medID,
+            }
+        })
+
+        if (!found) {
+            throw new NotFoundException(`Can't find scraped info with id ${medID}`);
+        }
+        
+        return found;
+    }
 
     async getScrapedMeds(id: number): Promise<ScrapedMed> {
         try {
