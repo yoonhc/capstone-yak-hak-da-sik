@@ -26,5 +26,8 @@ export class MedRef {
 
   // 나중에 array 로 바꿔야함 dur: string[]; array: true
   @Column({ type: 'varchar', nullable: true })
-  dur: string;              // 병용금지 dur정보
+  contraindicateDUR: string;              // 병용금지 dur정보
+
+  @Column({ type: 'varchar', nullable: true })
+  durCombined: string;                    // 병용금기, 복합제, 병용금기 복합제 dur 성분 종합한 정보
 }

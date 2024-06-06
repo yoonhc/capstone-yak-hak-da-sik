@@ -10,21 +10,21 @@ export class MedSummary {
   effect: string;
 
   // 필첵 같은 짧은 한눈에 보는 주의점
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "simple-array", nullable: true })
   pillCheck: string
   
   // 약물상호작용
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "simple-array", nullable: true })
   medInteraction: string
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "simple-array", nullable: true })
   underlyingConditionWarn: string
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "simple-array", nullable: true })
   genaralWarn: string
 
   @Column({ type: "text", nullable: true })
-  regnancyWarn: string
+  pregnancyWarn: string
 
   @Column({ type: "text", nullable: true })
   foodInteraction: string

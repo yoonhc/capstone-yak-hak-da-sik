@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 /**
  * 이 dto 리스트를 최종적으로 client에 전달
@@ -45,23 +45,27 @@ export class MedInfoDTO {
 
     // 필첵 같은 짧은 한눈에 보는 주의점, 중요사항 e.g. 어지럽거나 졸릴수 있으므로 기계조작은 피하세요
     @ApiProperty()
-    @IsString()
-    pillCheck?: string       // gpt통해 가져와야할 듯
+    @IsArray()
+    @IsString({ each:  true })
+    pillCheck?: string[]       // gpt통해 가져와야할 듯
     
     // 약물상호작용 e.g. 진정제와 병용하기 전에는 전문가와 상의하세요
     @ApiProperty()
-    @IsString()
-    medInteraction?: string  // gpt통해 가져와야할 듯
+    @IsArray()
+    @IsString({ each:  true })
+    medInteraction?: string[]  // gpt통해 가져와야할 듯
 
     // 기저질환주의 e.g. 간질환 환자의 경우 전문가에게 미리 알리세요
     @ApiProperty()
-    @IsString()
-    underlyingConditionWarn?: string
+    @IsArray()
+    @IsString({ each:  true })
+    underlyingConditionWarn?: string[]
 
     //일반주의 e.g. 과도한 음주나 흡연은 삼가세요
     @ApiProperty()
-    @IsString()
-    genaralWarn?: string
+    @IsArray()
+    @IsString({ each:  true })
+    genaralWarn?: string[]
 
     // 임산부주의 e.g. 임산부, 수유부는 투여하지 마세요
     @ApiProperty()
