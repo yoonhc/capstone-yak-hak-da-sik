@@ -22,8 +22,8 @@ export class GptsService {
         const prompt = [
             {
                 role: "system",
-                content: "You are a helpful assistant that summarizes medical information into a structured JSON format."
-                    + "Make sure each field is in Korean, easy to understand and extremely short. Leave the field empty if there's no information. Reply in Korean"
+                content: "You are a helpful assistant designed to  summarize medical information into a structured JSON format."
+                    + "Make sure each field is easy to understand and really short. Leave the field empty if there's no information. Reply in Korean"
             },
             {
                 role: "system",
@@ -33,8 +33,6 @@ export class GptsService {
                     "pillCheck": "The most important things the user should know about this medication based on the provided text. Save up to 2 items in an array of strings, e.g., ['장시간 눞거나 앉은 자세에서 일어나는 경우 천천히 일어나세요']",
                     "medInteraction": "Interactions with other medications. e.g., ['전문가와 상의없이 다른 감기약과 병용하지 마세요']",
                     "underlyingConditionWarn": "Warnings for users with underlying conditions, e.g., ['간질환 환자나 신장질환 환자의 경우 전문가에게 미리 알리세요']",
-                    "genaralWarn": "General warnings regarding this medication, e.g., ['2주 정도 투여해도 증상 개선이 없는 경우 전문가와 상의하세요']",
-                    "pregnancyWarn": "Warnings for pregnant persons, e.g., '임산부 및 임신 가능성이 있는 여성은 투여하지 마세요'",
                     "foodInteraction": "Interactions with foods, e.g., '다량의 자몽주스를 섭취하는 건 피하세요'",
                     "suppInteraction": "Warnings or advice regarding supplements, e.g., '아연이 부족해질 수 있으니 아연 관련 영양제를 먹으면 좋아요'"
                 }`
@@ -51,8 +49,6 @@ export class GptsService {
                   "pillCheck": [],
                   "medInteraction": [],
                   "underlyingConditionWarn": [],
-                  "genaralWarn": [],
-                  "pregnancyWarn": "",
                   "foodInteraction": "",
                   "suppInteraction": ""
                 }`
@@ -60,7 +56,7 @@ export class GptsService {
         ];
         const response = await client.getChatCompletions(deploymentId, prompt, {
             temperature: 0.0,
-            // responseFormat: { "type": "json_object" },
+            responseFormat: { "type": "json_object" },
         });
 
         if (response.choices.length > 0 && response.choices[0].message) {

@@ -37,8 +37,14 @@ export class DursService {
         const contraindicateDURSet = new Set<string>();
         const durEntitySet = new Set<DUR>();
 
+        // Initialize the map to store med names by ID
+        const medNameMap = new Map<number, string>();
+
         // MedRefList의 모든 entity당 durCombined 리스트를 추출하여 dur이 key, 해당 dur을 가지고 있는 약 id를 value로 하는 Map을 만든다
         MedRefLists.forEach(async medRef => {
+            // Store the medication name by ID
+            medNameMap.set(medRef.id, medRef.medName);
+
             // Split the durCombined field into individual elements
             let durElements: string[] = [];
             let contraindicateDURElements: string[] = [];
@@ -128,13 +134,21 @@ export class DursService {
             for (const itemGroup of uniqueItemGroups) {
                 // Sort the ids array to ensure order doesn't affect comparison
                 const sortedIds = Array.from(itemGroup).sort((a, b) => a - b);
+
+                // Retrieve the names for the sorted IDs from the medNameMap
+                const medNames = sortedIds.map(id => medNameMap.get(id));
+
+                // Create a string with names separated by "와"
+                const namesString = medNames.join(" 와 ");
+
+                const contraindicateReason = `${namesString}을(를) 병용하면 ${durEntity.contraindicateReason} 위험이 있습니다.`;
                 // Check if the sorted itemGroup is already seen
                 const sortedItemGroupKey = JSON.stringify(sortedIds);
                 if (!seenItemGroups.has(sortedItemGroupKey)) {
                     const itemGroupArray = Array.from(itemGroup); // Convert Set<number> to number[]
                     result.push({
                         ids: itemGroupArray,
-                        contraindicateReason: durEntity.contraindicateReason
+                        contraindicateReason: contraindicateReason
                     });
                     seenItemGroups.add(sortedItemGroupKey); // Add the sorted itemGroup to the set of seen itemGroups
                 }
