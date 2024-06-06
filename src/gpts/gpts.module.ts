@@ -10,6 +10,6 @@ import { GptsController } from './gpts.controller';
   ],
   providers: [GptsService],
   controllers: [GptsController],
-  exports: [GptsService],
+  exports: [GptsService, TypeOrmModule],
 })
 export class GptsModule {}

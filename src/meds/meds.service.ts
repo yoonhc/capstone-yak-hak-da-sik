@@ -5,7 +5,7 @@ import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
 import { OCRResultDTO } from './dto/ocr-result-dto';
 import { MedResponseDTO } from './dto/med-response-dto';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Med } from './med.entity';
 import { Repository, ILike } from 'typeorm';
 import { targetModulesByContainer } from '@nestjs/core/router/router-module';
@@ -32,6 +32,7 @@ export class MedsService {
     constructor(
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
+        @InjectRepository(MedSummary)
         private medSummaryRepository: Repository<MedSummary>,
         private readonly configService: ConfigService,
         private gptService: GptsService,
