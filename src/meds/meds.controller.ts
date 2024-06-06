@@ -6,6 +6,7 @@ import { OCRResultDTO } from './dto/ocr-result-dto';
 import { Med } from './med.entity';
 import { MedRequestDTO } from './dto/med-request-dto';
 import { MedResponseDTO } from './dto/med-response-dto';
+import { MedInfoDTO } from './dto/med-info-dto';
 
 @Controller('meds')
 @ApiTags('meds')
@@ -24,13 +25,27 @@ export class MedsController {
         return await this.medsService.extractMeds(ocrResult);
     }
 
+    @Post('get-one')
+    @ApiOperation({ summary: 'Get Med Information' })
+    @ApiResponse({
+        status: 201,
+        description: 'Successfully returned e-Med informations',
+    })
+    async getMedInfo(
+        @Body() body: any
+    ): Promise<MedInfoDTO> {
+        // 서비스 만들어서 구현해야함
+        const id: number = body.id;
+        return await this.medsService.getOneMed(id);
+    }
+
     @Post('get-info')
     @ApiOperation({ summary: 'Get Med Informations and DUR Results(MedResponseDTO)' })
     @ApiResponse({
         status: 201,
         description: 'Successfully returned e-Med informations',
     })
-    async getMedInfo(
+    async getMedsInfo(
         @Body()
         medList: MedRequestDTO
     ): Promise<MedResponseDTO> {

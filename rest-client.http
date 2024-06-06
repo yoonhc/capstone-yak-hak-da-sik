@@ -23,6 +23,15 @@ Content-Type: application/json
   ]
 }
 
+### GET MED INFOS AND DUR RESULTS
+POST http://localhost:3000/meds/get-one
+Content-Type: application/json
+
+{
+  "id": 199502137
+}
+
+
 ### GET GPT SUMMRAY RESULT
 POST http://localhost:3000/gpts
 Content-Type: application/json

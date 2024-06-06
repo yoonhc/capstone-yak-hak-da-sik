@@ -69,7 +69,7 @@ export class MedsService {
         console.log(`Total lines after preprocessing: ${filteredLines.length}`);
         return preprocessedText;
     }
-    
+
     // 등록 누르는 순간에
     /*
     {
@@ -85,6 +85,120 @@ export class MedsService {
         ]
     }
     */
+    async getOneMed(id: number): Promise<MedInfoDTO> {
+        // e약은요에서 찾고, 없으면 스크랩 정보 가져오기
+        let medInfoDTO = new MedInfoDTO();
+
+        try {
+            // medRef 객체 얻기
+            const medRef = await this.medRefsService.findOneById(id);
+            // medRef 정보 옮기기
+            medInfoDTO.id = medRef.id;
+            medInfoDTO.medName = medRef.medName;
+            medInfoDTO.companyName = medRef.companyName;
+            medInfoDTO.image = medRef.image;
+            medInfoDTO.medClass = medRef.medClass;
+            medInfoDTO.medType = medRef.medType;
+
+            // 필요한 것
+            // effect e약은요 or 스크랩
+            // howToUse e약은요 or 스크랩
+            // howToStore e약은요 or 스크랩
+
+            // pillCheck GPT
+            // medInteraction GPT
+            // underlyingConditionWarn GPT
+            // generalWarn GPT
+            // pregnancyWarn GPT
+            // foodInteraction GPT
+            // suppInteraction GPT
+            let textToSummarize: string;
+            try {
+                // e약은요 정보 접근
+                const med = await this.getMedInfoByID(medInfoDTO.id);
+
+                // med의 정보를 그대로 옮김
+                // effect, howToUse, howToStore
+                medInfoDTO.effect = med.effect;
+                medInfoDTO.howToUse = med.howToUse;
+                medInfoDTO.howToStore = med.howToStore;
+                medInfoDTO.detailedCriticalInfo = med.criticalInfo;
+                medInfoDTO.detailedInteraction = med.interaction;
+                medInfoDTO.detailedSideEffect = med.sideEffect;
+                medInfoDTO.detailedWarning = med.warning;
+
+                // GPT에 전달할 항목
+                // criticalInfo, warning, interaction, sideEffect
+                textToSummarize = '<critical_info>:' + med.criticalInfo + '\n'
+                    + '<warning>:' + med.warning + '\n'
+                    + med.interaction + '\n'
+                    + med.sideEffect;
+            } catch { // e약은요 정보 없을 경우
+                // 스크랩 정보 접근
+                let scrapedMed: ScrapedMed;
+                try { // DB 접근 시도
+                    scrapedMed = await this.scrapedMedsService.getSavedScrap(medInfoDTO.id);
+                } catch { // DB에 없으면 받아옴
+                    scrapedMed = await this.scrapedMedsService.getScrapedMeds(medInfoDTO.id);
+                }
+
+                // scrapedMed의 정보를 그대로 옮김
+                // effect, howToUse, howToStore
+                // medInfoDTO.effect = scrapedMed.effect;
+                // medInfoDTO.howToUse = scrapedMed.howToUse;
+                medInfoDTO.howToStore = scrapedMed.howToStore;
+
+                // GPT에 전달할 항목
+                // effect, howToUse, warning
+                textToSummarize = '<effect>: ' + scrapedMed.effect + '\n'
+                    + '<howToUse>: ' + scrapedMed.howToUse + '\n'
+                    + '<warning>:' + scrapedMed.warning;
+            }
+            // gpt도 정보 있는지 확인하는 로직
+            // GPT 요약 정보 받아옴
+            let summarizedInfo: MedSummary = new MedSummary();
+            try {
+                // MedSummary 정보 접근
+                summarizedInfo = await this.gptService.getMedSummaryByID(medInfoDTO.id);
+            } catch {   // db에 없다면
+                const gptSummaryDTO = await this.gptService.gptSummarizeMeds(textToSummarize);
+                summarizedInfo.id = medInfoDTO.id;
+                summarizedInfo.foodInteraction = gptSummaryDTO.foodInteraction;
+                summarizedInfo.genaralWarn = gptSummaryDTO.genaralWarn;
+                summarizedInfo.medInteraction = gptSummaryDTO.medInteraction;
+                summarizedInfo.pillCheck = gptSummaryDTO.pillCheck;
+                summarizedInfo.pregnancyWarn = gptSummaryDTO.pregnancyWarn;
+                summarizedInfo.suppInteraction = gptSummaryDTO.suppInteraction;
+                summarizedInfo.underlyingConditionWarn = gptSummaryDTO.underlyingConditionWarn;
+                summarizedInfo.effect = gptSummaryDTO.effect;
+                this.medSummaryRepository.save(summarizedInfo)
+            }
+            // effect 항목이 없으면. 즉 scrapedMeds인 경우
+            if (!medInfoDTO.effect) {
+                medInfoDTO.effect = summarizedInfo.effect;
+            }
+            // GPT 요약 정보 옮기기
+            medInfoDTO.pillCheck = summarizedInfo.pillCheck;
+            medInfoDTO.medInteraction = summarizedInfo.medInteraction;
+            medInfoDTO.underlyingConditionWarn = summarizedInfo.underlyingConditionWarn;
+            medInfoDTO.genaralWarn = summarizedInfo.genaralWarn;
+            medInfoDTO.pregnancyWarn = summarizedInfo.pregnancyWarn;
+            medInfoDTO.foodInteraction = summarizedInfo.foodInteraction;
+            medInfoDTO.suppInteraction = summarizedInfo.suppInteraction;
+
+            // 이거 만듦?
+            // detailedCriticalInfo
+            // detailedWarning
+            // detailedInteraction
+            // detailedSideEffect
+
+            // medInfos에 저장
+
+        } catch (e) { // 애초에 약 이름이 잘못된 경우. 스킵
+            console.error(`No medication found: id: ${id}`);
+        }
+        return medInfoDTO;
+    }
     async getMedResponse(medListDTO: MedListDTO): Promise<MedResponseDTO> {
         // e약은요에서 찾고, 없으면 스크랩 정보 가져오기
         let medResponseDTO = new MedResponseDTO;
@@ -135,10 +249,10 @@ export class MedsService {
 
                     // GPT에 전달할 항목
                     // criticalInfo, warning, interaction, sideEffect
-                    textToSummarize = med.criticalInfo + '\n'
-                    + med.warning + '\n'
-                    + med.interaction + '\n'
-                    + med.sideEffect;
+                    textToSummarize = '<critical_info>:' + med.criticalInfo + '\n'
+                        + '<warning>:' + med.warning + '\n'
+                        + med.interaction + '\n'
+                        + med.sideEffect;
                 } catch { // e약은요 정보 없을 경우
                     // 스크랩 정보 접근
                     let scrapedMed: ScrapedMed;
@@ -157,12 +271,12 @@ export class MedsService {
                     // GPT에 전달할 항목
                     // effect, howToUse, warning
                     textToSummarize = '<effect>: ' + scrapedMed.effect + '\n'
-                    + '<howToUse>: ' + scrapedMed.howToUse + '\n'
-                    + '<warning>:' + scrapedMed.warning;
+                        + '<howToUse>: ' + scrapedMed.howToUse + '\n'
+                        + '<warning>:' + scrapedMed.warning;
                 }
                 // gpt도 정보 있는지 확인하는 로직
                 // GPT 요약 정보 받아옴
-                let summarizedInfo: MedSummary = null
+                let summarizedInfo: MedSummary = new MedSummary();
                 try {
                     // MedSummary 정보 접근
                     summarizedInfo = await this.gptService.getMedSummaryByID(medInfoDTO.id);
@@ -178,10 +292,10 @@ export class MedsService {
                     summarizedInfo.underlyingConditionWarn = gptSummaryDTO.underlyingConditionWarn;
                     summarizedInfo.effect = gptSummaryDTO.effect;
                     this.medSummaryRepository.save(summarizedInfo)
-                }   
+                }
 
                 // effect 항목이 없으면. 즉 scrapedMeds인 경우
-                if(medInfoDTO.effect = null) {
+                if (!medInfoDTO.effect) {
                     medInfoDTO.effect = summarizedInfo.effect;
                 }
                 // GPT 요약 정보 옮기기
@@ -282,7 +396,7 @@ export class MedsService {
         }
 
         return found;
-    } 
+    }
 
     // 약 이름을 포함하는 모든 데이터 개체 검색
     async getMedInfoByLikeName(name: string): Promise<Med[]> {
@@ -294,7 +408,7 @@ export class MedsService {
 
         // 결과가 완전히 비었을 경우 Exception 발생
         if (!likeMatches.length) {
-            throw new NotFoundException(`Can't find any medicine containing the name '${name}'`);   
+            throw new NotFoundException(`Can't find any medicine containing the name '${name}'`);
         }
 
         return likeMatches;
