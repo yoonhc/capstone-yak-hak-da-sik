@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MedRef } from './med-ref.entity';
-import { ILike, In, Not, Repository } from 'typeorm';
+import { Like, ILike, In, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class MedRefsService {
