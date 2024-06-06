@@ -4,11 +4,13 @@ import { MedsService } from './meds.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Med } from './med.entity';
 import { GptsModule } from 'src/gpts/gpts.module';
+import { MedRefsModule } from 'src/med-refs/med-refs.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Med]),
-    GptsModule
+    GptsModule,
+    MedRefsModule
   ],
   controllers: [MedsController],
   providers: [MedsService],

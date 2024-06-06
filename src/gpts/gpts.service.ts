@@ -141,7 +141,9 @@ export class GptsService {
                 role: "system",
                 content: 'You are a helpful assistant that extract only medication from list of words seperated by \\n.'
                     + 'Please extract only medications in given text and provide the result.\n'
-                    + 'This is an example format: "medication1, medication2, medication3"'
+                    + 'This is an example format: "medication1 (ingredient1), medication2, medication3(ingredient3)"'
+                    + 'Ensure to maintain accuracy and completeness in the extraction process.'
+                    + 'If there is a parenthesis right after what you recognize as a drug, it is likely to be an ingredient name, so be sure to include it.'
             },
             {
                 role: "user",

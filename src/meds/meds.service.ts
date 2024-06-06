@@ -9,6 +9,7 @@ import { Repository, ILike } from 'typeorm';
 import { targetModulesByContainer } from '@nestjs/core/router/router-module';
 import { performance } from 'perf_hooks';
 import { GptsService } from 'src/gpts/gpts.service';
+import { MedRefsService } from 'src/med-refs/med-refs.service';
 const RE2 = require('re2');
 
 @Injectable()
@@ -25,7 +26,8 @@ export class MedsService {
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
         private readonly configService: ConfigService,
-        private gptService: GptsService
+        private gptService: GptsService,
+        private medRefsService: MedRefsService
     ) {
         // 정규 표현식화
         const pattern = this.keywords.map(keyword => `${keyword}`).join('|');
@@ -123,10 +125,11 @@ export class MedsService {
     // GPT 결과("약물1, 약물2, 약물3")를 가지고 MedListDTO를 만든다. 
     // 차후에 각각 약물이 맞는지(e.g. db에 있는지) verify하는 기능을 넣어야 할 듯
     // 마지막 결과 리스트는 med-reference db에 이름이 있어야 하는게 좋을듯
-    refineGPTResult(gptResult: string): MedListDTO {
+    async refineGPTResult(gptResult: string): Promise<MedListDTO> {
         const medicationsArray = gptResult.split(", ");
+        const postprocessedArray = await this.medRefsService.processMedNameBeforeSearch(medicationsArray);
         const medListDTO: MedListDTO = new MedListDTO();
-        medListDTO.medications = medicationsArray;
+        medListDTO.medications = postprocessedArray;
         return medListDTO;
     }
 
