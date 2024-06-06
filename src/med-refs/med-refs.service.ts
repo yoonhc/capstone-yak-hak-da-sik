@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MedRef } from './med-ref.entity';
-import { Like, ILike, In, Not, Repository } from 'typeorm';
+import { ILike, In, Not, Repository, IsNull } from 'typeorm';
 
 @Injectable()
 export class MedRefsService {
@@ -76,7 +76,7 @@ export class MedRefsService {
         if (!medRefs) {
             throw new NotFoundException(`No matching MedRef found for medName: ${medName}`);
         }
-        
+
         let bestMatch: MedRef | null = null;
         let minDistance = Infinity;
 
@@ -201,10 +201,10 @@ export class MedRefsService {
 
     async findNotNullDurByIds(ids: number[]): Promise<MedRef[]> {
         return this.medRefRepository.find({
-          where: {
-            id: In(ids),
-            durCombined: Not(null),
-          },
+            where: {
+                id: In(ids),
+                durCombined: Not(IsNull()), // Check for non-null values
+            },
         });
-      }
+    }
 }

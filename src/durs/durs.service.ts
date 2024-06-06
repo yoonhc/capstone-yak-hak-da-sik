@@ -6,6 +6,7 @@ import { MedRequestDTO } from 'src/meds/dto/med-request-dto';
 import { DURInfoDTO } from './dto/dur-info-dto';
 import { MedRefsService } from 'src/med-refs/med-refs.service';
 import { every } from 'rxjs';
+import { MedRef } from 'src/med-refs/med-ref.entity';
 
 @Injectable()
 export class DursService {
@@ -26,9 +27,9 @@ export class DursService {
      * durcode, combinationDUR,contraindicateDUR,contraindicateCombinationDUR를 저장 - A라 하자
      * A에서 
      */
-    async getDURINfo(ids: number[]): Promise<DURInfoDTO[]> {
+    async getDURInfo(ids: number[]): Promise<DURInfoDTO[]> {
         // returns MedRefs whose durCombined fields is not null
-        const MedRefLists = await this.medRefsService.findNotNullDurByIds(ids)
+        const MedRefLists = await this.medRefsService.findNotNullDurByIds(ids);
 
         // Initialize the map
         const durElementMap = new Map<string, number[]>();
@@ -36,7 +37,7 @@ export class DursService {
         const contraindicateDURSet = new Set<string>();
         const durEntitySet = new Set<DUR>();
 
-        // Iterate over each MedRef entity
+        // MedRefList의 모든 entity당 durCombined 리스트를 추출하여 dur이 key, 해당 dur을 가지고 있는 약 id를 value로 하는 Map을 만든다
         MedRefLists.forEach(async medRef => {
             // Split the durCombined field into individual elements
             const durElements = medRef.durCombined.split('/');
@@ -57,7 +58,7 @@ export class DursService {
                 }
             });
 
-            // Iterate over each contraindicateDURElement
+            // 모든 entity당 병용금기 dur 요소(DUR 성분코드)를 추출하여 이를 원소로 가지고 있는 Set을 만든다.
             contraindicateDURElements.forEach(contraindicateDURElement => {
                 // Trim any whitespace from contraindicateDURElement
                 const trimmedElement = contraindicateDURElement.trim();
@@ -75,22 +76,111 @@ export class DursService {
             if (durEntities.length > 0) {   // durcode에 해당하는 entity가 존재한다면(사실 항상 존재)
                 // Iterate over each DUR entity
                 for (const durEntity of durEntities) {  // durEntity의 모든 null이 아닌 dur element가 Map에 존재하는지 판단
-                    if(durElementMap.has(durEntity.contraindicateDUR)){
-                        const combinationDURs = durEntity.combinationDUR.split('/')
-                        const contraindicateCombinationDURs = durEntity.combinationDUR.split('/')
-                        if (combinationDURs.length > 0 && contraindicateCombinationDURs.length > 0) {
-                            // Check if every element in combinationDURs is in the map
-                            const allCombDURInMap = combinationDURs.every(dur => durElementMap.has(dur.trim()));
-                            const allContrainDURInMap = combinationDURs.every(dur => durElementMap.has(dur.trim()));
-                            if (allCombDURInMap && allContrainDURInMap) {
-                                durEntitySet.add(durEntity)
+                    if (durElementMap.has(durEntity.contraindicateDUR)) {
+                        let combinationDURs: string[] = [];
+                        let contraindicateCombinationDURs: string[] = [];
+
+                        if (durEntity.combinationDUR) {
+                            combinationDURs = durEntity.combinationDUR.split('/');
+                        }
+
+                        if (durEntity.contraindicateCombinationDUR) {
+                            contraindicateCombinationDURs = durEntity.contraindicateCombinationDUR.split('/');
+                        }
+
+                        // Now you can iterate over each array and add its elements to a set
+                        const combinedDURSet = new Set<string>();
+
+                        combinationDURs.forEach(dur => {
+                            const trimmedDur = dur.trim();
+                            if (trimmedDur !== '') { // Check if it's not an empty string
+                                combinedDURSet.add(trimmedDur);
                             }
-                        } 
+                        });
+
+                        contraindicateCombinationDURs.forEach(dur => {
+                            const trimmedDur = dur.trim();
+                            if (trimmedDur !== '') { // Check if it's not an empty string
+                                combinedDURSet.add(trimmedDur);
+                            }
+                        });
+                        // 모든 복합제, 병용금기복합제가 다 map에 있으면 OK(병용금기 충돌일어난거임)
+                        if (Array.from(combinedDURSet).every(dur => durElementMap.has(dur))) {
+                            durEntitySet.add(durEntity);
+                        }
                     }
                 }
             }
         }
-        
-        return
+        console.log(durEntitySet)
+        const result: DURInfoDTO[] = [];
+
+        for (const durEntity of durEntitySet) {
+            const uniqueItemGroups = this.findUniqueItemGroups(durEntity, durElementMap);
+
+            for (const itemGroup of uniqueItemGroups) {
+                const itemGroupArray = Array.from(itemGroup); // Convert Set<number> to number[]
+                result.push({
+                    ids: itemGroupArray,
+                    contraindicateReason: durEntity.contraindicateReason
+                });
+            }
+        }
+        return result;
+    }
+
+    findUniqueItemGroups(durEntity: DUR, durElementMap: Map<string, number[]>): Set<Set<number>> {
+        const durSetArray: number[][] = [];
+        const durCodeItem = durElementMap[durEntity.durCode]
+        const contraindicateDURItem = durElementMap[durEntity.contraindicateDUR]
+        let combinationDURs: string[] = []
+        let contraindicateCombinationDURs: string[] = []
+
+        if(durEntity.combinationDUR) {
+            combinationDURs = durEntity.combinationDUR.split('/')
+        }
+        if(durEntity.contraindicateCombinationDUR) {
+            contraindicateCombinationDURs = durEntity.contraindicateCombinationDUR.split('/')
+        }
+        if (durCodeItem) {
+            durSetArray.push(durCodeItem);
+        }
+        if (contraindicateDURItem) {
+            durSetArray.push(contraindicateDURItem);
+        }
+
+        if (combinationDURs.length > 0) {
+            combinationDURs.forEach(item => {
+                const durItem = durElementMap.get(item);
+                if (durItem) {
+                    durSetArray.push(durItem);
+                }
+            });
+        }
+
+        if (contraindicateCombinationDURs.length > 0) {
+            contraindicateCombinationDURs.forEach(item => {
+                const durItem = durElementMap.get(item);
+                if (durItem) {
+                    durSetArray.push(durItem);
+                }
+            });
+        }
+        const uniqueCombinations = new Set<Set<number>>();
+        const generateCombinations = (currentCombination: Set<number>, index: number) => {
+            if (index === durSetArray.length) {
+                uniqueCombinations.add(new Set(currentCombination));
+                return;
+            }
+
+            durSetArray[index].forEach(item => {
+                currentCombination.add(item);
+                generateCombinations(currentCombination, index + 1);
+                currentCombination.delete(item);
+            });
+        };
+        generateCombinations(new Set(), 0);
+
+        return uniqueCombinations
     }
 }
