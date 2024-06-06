@@ -14,8 +14,11 @@ export class GptsService {
         private readonly configService: ConfigService,
     ) { }
     async gptSummarizeMeds(textToSummarize: string): Promise<GPTSummaryDTO> {
+        // const endpoint = 'https://cap4o.openai.azure.com/';
         const endpoint: string = this.configService.get<string>('endpoint');
+        // const azureKeyCredential = 'f2c8e7826b47459c8fc7156159410738';
         const azureKeyCredential: string = this.configService.get<string>('azureKey');
+        // const deploymentId = 'capstone';
         const deploymentId: string = this.configService.get<string>('deploymentID');
         const client: OpenAIClient = new OpenAIClient(endpoint, new AzureKeyCredential(azureKeyCredential));
         // 말투도 신경써야할듯
