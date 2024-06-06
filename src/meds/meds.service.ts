@@ -178,9 +178,15 @@ export class MedsService {
                 continue;
             }
         }
+
+        // current medications까지 포함
+        for (const id of medListDTO.currentMedications) {
+            IDs.push(id);
+        }
+
         // DUR정보 얻기
         medResponseDTO.durInfos = await this.dursService.getDURINfo(IDs);
-        
+
         return medResponseDTO;
     }
 
