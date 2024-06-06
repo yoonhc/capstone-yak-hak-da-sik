@@ -43,10 +43,10 @@ export class DursService {
             let durElements: string[] = [];
             let contraindicateDURElements: string[] = [];
 
-            if(medRef.durCombined) {
+            if (medRef.durCombined) {
                 durElements = medRef.durCombined.split('/');
             }
-            if(medRef.contraindicateDUR) {
+            if (medRef.contraindicateDUR) {
                 contraindicateDURElements = medRef.contraindicateDUR.split('/');
             }
             // Iterate over each durElement
@@ -120,15 +120,24 @@ export class DursService {
         console.log(durEntitySet)
         const result: DURInfoDTO[] = [];
 
+        const seenItemGroups = new Set<string>(); // Initialize a set to keep track of seen itemGroups
+
         for (const durEntity of durEntitySet) {
             const uniqueItemGroups = this.findUniqueItemGroups(durEntity, durElementMap);
 
             for (const itemGroup of uniqueItemGroups) {
-                const itemGroupArray = Array.from(itemGroup); // Convert Set<number> to number[]
-                result.push({
-                    ids: itemGroupArray,
-                    contraindicateReason: durEntity.contraindicateReason
-                });
+                // Sort the ids array to ensure order doesn't affect comparison
+                const sortedIds = Array.from(itemGroup).sort((a, b) => a - b);
+                // Check if the sorted itemGroup is already seen
+                const sortedItemGroupKey = JSON.stringify(sortedIds);
+                if (!seenItemGroups.has(sortedItemGroupKey)) {
+                    const itemGroupArray = Array.from(itemGroup); // Convert Set<number> to number[]
+                    result.push({
+                        ids: itemGroupArray,
+                        contraindicateReason: durEntity.contraindicateReason
+                    });
+                    seenItemGroups.add(sortedItemGroupKey); // Add the sorted itemGroup to the set of seen itemGroups
+                }
             }
         }
         return result;
@@ -141,10 +150,10 @@ export class DursService {
         let combinationDURs: string[] = []
         let contraindicateCombinationDURs: string[] = []
 
-        if(durEntity.combinationDUR) {
+        if (durEntity.combinationDUR) {
             combinationDURs = durEntity.combinationDUR.split('/')
         }
-        if(durEntity.contraindicateCombinationDUR) {
+        if (durEntity.contraindicateCombinationDUR) {
             contraindicateCombinationDURs = durEntity.contraindicateCombinationDUR.split('/')
         }
         if (durCodeItem) {
@@ -170,7 +179,6 @@ export class DursService {
                 }
             });
         }
-        console.log(durSetArray)
 
         const uniqueCombinations = new Set<Set<number>>();
         const generateCombinations = (currentCombination: Set<number>, index: number) => {
@@ -186,7 +194,6 @@ export class DursService {
             });
         };
         generateCombinations(new Set(), 0);
-        console.log(uniqueCombinations)
         return uniqueCombinations
     }
 }
