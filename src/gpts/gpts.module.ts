@@ -9,6 +9,7 @@ import { GptsController } from './gpts.controller';
     TypeOrmModule.forFeature([MedSummary])
   ],
   providers: [GptsService],
-  controllers: [GptsController]
+  controllers: [GptsController],
+  exports: [GptsService],
 })
 export class GptsModule {}

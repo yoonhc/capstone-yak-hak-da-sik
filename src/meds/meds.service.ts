@@ -8,6 +8,7 @@ import { Med } from './med.entity';
 import { Repository, ILike } from 'typeorm';
 import { targetModulesByContainer } from '@nestjs/core/router/router-module';
 import { performance } from 'perf_hooks';
+import { GptsService } from 'src/gpts/gpts.service';
 const RE2 = require('re2');
 
 @Injectable()
@@ -23,7 +24,8 @@ export class MedsService {
     constructor(
         @InjectRepository(Med)
         private medRepository: Repository<Med>,
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private gptService: GptsService
     ) {
         // 정규 표현식화
         const pattern = this.keywords.map(keyword => `${keyword}`).join('|');
@@ -136,46 +138,13 @@ export class MedsService {
         // 프로젝트 규모가 커지고 사용자가 늘어나면 대규모 데이터에 대한 처리가 필요할 수 있음
         const preprocessed: string = this.preprocessOCR(ocrResult);
         // const startTime = performance.now();
-        // console.log(this.refineGPTResult(await this.getGPTResponse(ocrResult.text)));
+        // console.log(this.refineGPTResult(await this.gptService.gptExtractMeds((preprocessed)));
         // const endTime = performance.now();
         // console.log(`raw response time: ${endTime - startTime}ms`);
         // const pstartTime = performance.now();
-        const result = this.refineGPTResult(await this.getGPTResponse((preprocessed)));
+        const result = this.refineGPTResult(await this.gptService.gptExtractMeds((preprocessed)));
         // const pendTime = performance.now();
         // console.log(`preprocessed response time: ${pendTime - pstartTime}ms`);
         return result;
-    }
-
-    // 전처리된 ocr결과를 GPT에 요청해 약물 리스트를 "약물1, 약물2, 약물3"
-    async getGPTResponse(preprocessed: string): Promise<string> {
-        const endpoint: string = this.configService.get<string>('endpoint');
-        const azureKeyCredential: string = this.configService.get<string>('azureKey');
-        const deploymentId: string = this.configService.get<string>('deploymentID');
-        const client: OpenAIClient = new OpenAIClient(endpoint, new AzureKeyCredential(azureKeyCredential));
-
-        const prompt = [
-            {
-                role: "system",
-                content: 'You are a helpful assistant that extract only medication from list of words seperated by \\n.'
-                    + 'Please extract only medications in given text and provide the result.\n'
-                    + 'This is an example format: "medication1, medication2, medication3"'
-            },
-            {
-                role: "user",
-                content: preprocessed
-            },
-        ];
-
-        const response = await client.getChatCompletions(deploymentId, prompt, {
-            maxTokens: 200,
-            temperature: 0.0,
-        });
-
-        if (response.choices.length > 0 && response.choices[0].message) {
-            const gptResult: string = response.choices[0].message.content;
-            return gptResult;
-        } else {
-            console.log("No message content found in the response.");
-        }
     }
 }
