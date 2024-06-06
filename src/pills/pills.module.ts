@@ -4,11 +4,13 @@ import { PillsService } from './pills.service';
 import { Pill } from './pill.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MedsModule } from '../meds/meds.module'; 
+import { MedRefsModule } from 'src/med-refs/med-refs.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Pill]),
-    MedsModule
+    MedsModule,
+    MedRefsModule
   ],
   controllers: [PillsController],
   providers: [PillsService]
