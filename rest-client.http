@@ -43,6 +43,18 @@ Content-Type: application/json
   ]
 }
 
+### GET DUR INFO
+POST http://localhost:3000/durs
+Content-Type: application/json
+
+{
+  "ids": [
+    197600174,
+    200611520
+  ]
+}
+
+
 ###
 GET http://localhost:3000/scraped-meds/199703126
 
