@@ -143,6 +143,7 @@ export class GptsService {
                     + 'This is an example format: "medication1 (ingredient1), medication2, medication3(ingredient3)"'
                     + 'Ensure to maintain accuracy and completeness in the extraction process.'
                     + 'If there is a parenthesis right after what you recognize as a drug, it is likely to be an ingredient name, so be sure to include it.'
+                    + 'If there is a word that ends in ‘정’, it is likely to be a drug, so pay attention to this.'
                 },
             {
                 role: "user",
