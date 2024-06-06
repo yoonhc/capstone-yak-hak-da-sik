@@ -84,8 +84,10 @@ export class MedsService {
     */
     async getMedResponse(medListDTO: MedListDTO): Promise<MedResponseDTO> {
         // e약은요에서 찾고, 없으면 스크랩 정보 가져오기
-        let medResponseDTO: MedResponseDTO;
-        let IDs: number[];
+        let medResponseDTO = new MedResponseDTO;
+        medResponseDTO.medInfos = [];
+        medResponseDTO.durInfos = [];
+        let IDs: number[] = [];
         for (const medName of medListDTO.medications) {
             let medInfoDTO = new MedInfoDTO();
             try {
@@ -173,6 +175,8 @@ export class MedsService {
                 // medInfos에 저장
                 medResponseDTO.medInfos.push(medInfoDTO);
 
+                console.log(medInfoDTO.effect);
+
             } catch (e) { // 애초에 약 이름이 잘못된 경우. 스킵
                 console.error(`No medication found: ${medName}`);
                 continue;
@@ -187,6 +191,7 @@ export class MedsService {
         // DUR정보 얻기
         medResponseDTO.durInfos = await this.dursService.getDURInfo(IDs);
 
+        console.log(`Finished getting Med Info`);
         return medResponseDTO;
     }
 
