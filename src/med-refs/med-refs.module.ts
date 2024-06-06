@@ -7,6 +7,7 @@ import { MedRef } from './med-ref.entity';
   imports: [
     TypeOrmModule.forFeature([MedRef])
   ],
-  providers: [MedRefsService]
+  providers: [MedRefsService],
+  exports: [MedRefsService],
 })
 export class MedRefsModule {}

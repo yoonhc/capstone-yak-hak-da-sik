@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MedRef } from './med-ref.entity';
-import { ILike, Repository } from 'typeorm';
+import { ILike, In, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class MedRefsService {
@@ -141,4 +141,12 @@ export class MedRefsService {
         return medRef;
     }
 
+    async findNotNullDurByIds(ids: number[]): Promise<MedRef[]> {
+        return this.medRefRepository.find({
+          where: {
+            id: In(ids),
+            durCombined: Not(null),
+          },
+        });
+      }
 }

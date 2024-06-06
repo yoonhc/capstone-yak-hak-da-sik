@@ -99,7 +99,7 @@ export class MedInfoDTO {
 
     @ApiProperty()
     @IsString()
-    detaileWarning?: string         // med(e약은요) warning 필드
+    detailedWarning?: string         // med(e약은요) warning 필드
 
     @ApiProperty()
     @IsString()
