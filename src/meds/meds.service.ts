@@ -185,7 +185,7 @@ export class MedsService {
         }
 
         // DUR정보 얻기
-        medResponseDTO.durInfos = await this.dursService.getDURINfo(IDs);
+        medResponseDTO.durInfos = await this.dursService.getDURInfo(IDs);
 
         return medResponseDTO;
     }
