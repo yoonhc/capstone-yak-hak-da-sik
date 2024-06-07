@@ -25,7 +25,7 @@ export class DursService {
      * Set의 모든 element에 대하여 DUR성분코드를 통해 검색하여 해당되는 dur entity 리스트를 반환. durs.csv의 각 row에 해당하는 entity임.
      * 각 entity에서 combinationDUR,contraindicateDUR,contraindicateCombinationDUR가 모두 Map에 존재하면
      * durcode, combinationDUR,contraindicateDUR,contraindicateCombinationDUR를 저장 - A라 하자
-     * A에서 
+     * 이제 A에 있는 DUR 집합을 가능하게 하는 약 쌍을 찾으면 된다.
      */
     async getDURInfo(ids: number[]): Promise<DURInfoDTO[]> {
         // returns MedRefs whose durCombined fields is not null

@@ -14,11 +14,8 @@ export class GptsService {
         private readonly configService: ConfigService,
     ) { }
     async gptSummarizeMeds(textToSummarize: string): Promise<GPTSummaryDTO> {
-        // const endpoint = 'https://cap4o.openai.azure.com/';
         const endpoint: string = this.configService.get<string>('endpoint');
-        // const azureKeyCredential = 'f2c8e7826b47459c8fc7156159410738';
         const azureKeyCredential: string = this.configService.get<string>('azureKey');
-        // const deploymentId = 'capstone';
         const deploymentId: string = this.configService.get<string>('deploymentID');
         const client: OpenAIClient = new OpenAIClient(endpoint, new AzureKeyCredential(azureKeyCredential));
         // 말투도 신경써야할듯
@@ -32,7 +29,7 @@ export class GptsService {
                 role: "system",
                 content: `field properties:
                 {
-                    "effect": "Paraphrase the <effect> part from the provided text in one sentence",
+                    "effect": "Paraphrase the <effect> part from the provided text in one sentence. explain about what this medicine is for",
                     "pillCheck": "The most important things the user should know about this medication based on the provided text. Save up to 2 items in an array of strings, e.g., ['장시간 눞거나 앉은 자세에서 일어나는 경우 천천히 일어나세요']",
                     "medInteraction": "Interactions with other medications. e.g., ['전문가와 상의없이 다른 감기약과 병용하지 마세요']",
                     "underlyingConditionWarn": "Warnings for users with underlying conditions, e.g., ['간질환 환자나 신장질환 환자의 경우 전문가에게 미리 알리세요']",
