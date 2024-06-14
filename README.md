@@ -30,6 +30,9 @@
 **사용환경:**
 - React Native
 - Android Studio
+  
+**사용한 API/자료:**
+- Google Vision API
 
 ## Description
 
